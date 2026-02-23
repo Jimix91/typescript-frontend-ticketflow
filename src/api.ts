@@ -1,4 +1,4 @@
-import { CreateTaskInput, Task, UpdateTaskInput, User } from "./types";
+import { CreateTaskInput, Ticket, UpdateTaskInput, User } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5005/api";
 
@@ -27,11 +27,11 @@ export const api = {
   getUsers: () => request<User[]>("/users"),
   createUser: (data: Pick<User, "name" | "email">) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
-  getTasks: () => request<Task[]>("/tasks"),
+  getTasks: () => request<Ticket[]>("/tickets"),
   createTask: (data: CreateTaskInput) =>
-    request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
-  updateTask: (taskId: string, data: UpdateTaskInput) =>
-    request<Task>(`/tasks/${taskId}`, { method: "PUT", body: JSON.stringify(data) }),
-  deleteTask: (taskId: string) =>
-    request<void>(`/tasks/${taskId}`, { method: "DELETE" }),
+    request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
+  updateTask: (taskId: number, data: UpdateTaskInput) =>
+    request<Ticket>(`/tickets/${taskId}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteTask: (taskId: number) =>
+    request<void>(`/tickets/${taskId}`, { method: "DELETE" }),
 };
