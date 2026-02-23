@@ -133,7 +133,7 @@ function App() {
 
   return (
     <main className="container">
-      <h1>Task Manager</h1>
+      <h1>TicketFlow – Internal IT Support Management System</h1>
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 
@@ -156,7 +156,7 @@ function App() {
       </section>
 
       <section className="card">
-        <h2>Create task</h2>
+        <h2>Create ticket</h2>
         <form onSubmit={handleCreateTask} className="grid-form">
           <input
             value={title}
@@ -185,15 +185,15 @@ function App() {
             ))}
           </select>
           <button type="submit" disabled={!selectedUser}>
-            Add task
+            Add ticket
           </button>
         </form>
       </section>
 
       <section className="card">
-        <h2>Tasks</h2>
+        <h2>Tickets</h2>
         {tasks.length === 0 ? (
-          <p>No tasks yet.</p>
+          <p>No tickets yet.</p>
         ) : (
           <ul className="task-list">
             {tasks.map((task) => {

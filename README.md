@@ -1,6 +1,6 @@
-# React TypeScript Frontend
+# TicketFlow – Internal IT Support Management System (Frontend)
 
-SPA frontend built with React + TypeScript and Vite.
+Internal Helpdesk SPA built with React + TypeScript and Vite.
 
 ## Requirements coverage
 
