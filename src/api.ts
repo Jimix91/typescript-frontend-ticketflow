@@ -1,13 +1,29 @@
 import { CreateTaskInput, Ticket, UpdateTaskInput, User } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5005/api";
+let authToken: string | null = null;
+
+type AuthResponse = {
+  token: string;
+  user: User;
+};
+
+export const setApiToken = (token: string | null) => {
+  authToken = token;
+};
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
+    headers,
     ...init,
   });
 
@@ -24,8 +40,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  login: (data: { email: string; password: string }) =>
+    request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+  register: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
+    request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
+  me: () => request<User>("/auth/me"),
   getUsers: () => request<User[]>("/users"),
-  createUser: (data: Pick<User, "name" | "email">) =>
+  createUser: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
   getTasks: () => request<Ticket[]>("/tickets"),
   createTask: (data: CreateTaskInput) =>

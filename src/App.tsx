@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "./api";
+import { api, setApiToken } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
 import {
   CreateTicketPage,
@@ -12,6 +12,13 @@ import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 type Page = "dashboard" | "create" | "detail" | "edit";
 
 function App() {
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authToken, setAuthTokenState] = useState<string | null>(() => localStorage.getItem("ticketflow-token"));
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+
   const [users, setUsers] = useState<User[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +39,9 @@ function App() {
 
   const loadData = useCallback(async (showLoader: boolean) => {
     try {
+      if (!authToken) {
+        return;
+      }
       if (showLoader) {
         setLoading(true);
       }
@@ -59,13 +69,41 @@ function App() {
         setLoading(false);
       }
     }
-  }, []);
+  }, [authToken]);
 
   useEffect(() => {
-    void loadData(true);
-  }, [loadData]);
+    setApiToken(authToken);
+
+    if (!authToken) {
+      setLoading(false);
+      setAuthUser(null);
+      setUsers([]);
+      setTickets([]);
+      return;
+    }
+
+    const bootstrap = async () => {
+      try {
+        const me = await api.me();
+        setAuthUser(me);
+        await loadData(true);
+      } catch (_error) {
+        setAuthTokenState(null);
+        localStorage.removeItem("ticketflow-token");
+        setApiToken(null);
+        setAuthUser(null);
+        setLoading(false);
+      }
+    };
+
+    void bootstrap();
+  }, [authToken, loadData]);
 
   useEffect(() => {
+    if (!authToken) {
+      return;
+    }
+
     const intervalId = setInterval(() => {
       void loadData(false);
     }, 7000);
@@ -94,7 +132,7 @@ function App() {
         description: values.description,
         status: values.status,
         priority: values.priority,
-        createdById: values.createdById,
+        createdById: authUser?.id ?? values.createdById,
         assignedToId: values.assignedToId,
       });
       setTickets((prev) => [createdTask, ...prev]);
@@ -158,8 +196,106 @@ function App() {
     setPage("edit");
   };
 
+  const persistToken = (token: string) => {
+    setAuthTokenState(token);
+    localStorage.setItem("ticketflow-token", token);
+    setApiToken(token);
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await api.login({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+
+      persistToken(response.token);
+      setAuthUser(response.user);
+      setAuthPassword("");
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Login failed");
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const response = await api.register({
+        name: authName.trim(),
+        email: authEmail.trim(),
+        password: authPassword,
+        role: "EMPLOYEE",
+      });
+
+      persistToken(response.token);
+      setAuthUser(response.user);
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Register failed");
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthTokenState(null);
+    setApiToken(null);
+    localStorage.removeItem("ticketflow-token");
+    setAuthUser(null);
+    setUsers([]);
+    setTickets([]);
+    setPage("dashboard");
+  };
+
   if (loading) {
     return <main className="container">Loading...</main>;
+  }
+
+  if (!authToken || !authUser) {
+    return (
+      <main className="container">
+        <header className="page-header">
+          <h1>TicketFlow – Internal IT Support Management System</h1>
+        </header>
+
+        {errorMessage && <p className="error">{errorMessage}</p>}
+
+        <section className="card grid-form">
+          <h2>{authMode === "login" ? "Log in" : "Create account"}</h2>
+
+          {authMode === "register" && (
+            <input
+              placeholder="Your name"
+              value={authName}
+              onChange={(event) => setAuthName(event.target.value)}
+            />
+          )}
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={authEmail}
+            onChange={(event) => setAuthEmail(event.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={authPassword}
+            onChange={(event) => setAuthPassword(event.target.value)}
+          />
+
+          <div className="actions">
+            {authMode === "login" ? (
+              <button onClick={() => void handleLogin()}>Log in</button>
+            ) : (
+              <button onClick={() => void handleRegister()}>Register</button>
+            )}
+            <button onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}>
+              {authMode === "login" ? "Need an account?" : "Already have an account?"}
+            </button>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -167,6 +303,7 @@ function App() {
       <header className="page-header">
         <h1>TicketFlow – Internal IT Support Management System</h1>
         <div className="actions">
+          <span>{authUser.name}</span>
           <button onClick={() => setPage("dashboard")}>Dashboard</button>
           <button onClick={() => setPage("create")} disabled={users.length === 0}>
             Create Ticket
@@ -174,6 +311,7 @@ function App() {
           <button onClick={() => setIsDarkMode((prev) => !prev)}>
             {isDarkMode ? "Light Mode" : "Dark Mode"}
           </button>
+          <button onClick={handleLogout}>Log out</button>
         </div>
       </header>
 
