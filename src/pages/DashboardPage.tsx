@@ -175,8 +175,15 @@ export function DashboardPage({ tickets, users, onView, onEdit, onDelete, onMove
           ))}
         </select>
 
-        <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
-        <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+        <label className="date-filter">
+          Created from
+          <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
+        </label>
+
+        <label className="date-filter">
+          Created to
+          <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+        </label>
       </section>
 
       <section className="kanban-board">

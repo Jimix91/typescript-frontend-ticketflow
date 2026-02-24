@@ -158,6 +158,11 @@ button {
   gap: 8px;
 }
 
+.date-filter {
+  display: grid;
+  gap: 4px;
+}
+
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
