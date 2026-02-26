@@ -18,8 +18,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...(init?.headers as Record<string, string> | undefined),
   };
 
-  if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
+  const tokenFromStorage = localStorage.getItem("ticketflow-token");
+  const token = authToken ?? tokenFromStorage;
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_URL}${path}`, {

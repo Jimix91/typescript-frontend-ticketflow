@@ -34,11 +34,40 @@ body.theme-dark {
 }
 
 .page-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.app-title {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  min-height: 82px;
+  padding-left: 200px;
+  justify-content: flex-end;
+}
+
+.app-title span {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.app-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  clip-path: inset(18% 16% 20% 14%);
+  pointer-events: none;
 }
 
 .card {

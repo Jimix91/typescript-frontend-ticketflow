@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, setApiToken } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
+import ticketflowLogo from "./media/ticketflow_logo_transparent.png";
 import {
   CreateTicketPage,
   DashboardPage,
@@ -285,7 +286,10 @@ function App() {
     return (
       <main className="container">
         <header className="page-header">
-          <h1>TicketFlow – Internal IT Support Management System</h1>
+          <h1 className="app-title">
+            <img src={ticketflowLogo} alt="TicketFlow logo" className="app-logo" />
+            <span>Internal IT Support Management System</span>
+          </h1>
         </header>
 
         {errorMessage && <p className="error">{errorMessage}</p>}
@@ -333,7 +337,10 @@ function App() {
   return (
     <main className="container">
       <header className="page-header">
-        <h1>TicketFlow – Internal IT Support Management System</h1>
+        <h1 className="app-title">
+          <img src={ticketflowLogo} alt="TicketFlow logo" className="app-logo" />
+          <span>Internal IT Support Management System</span>
+        </h1>
         <div className="actions">
           <button onClick={() => setPage("profile")} className="profile-trigger">
             {authUser.profileImageUrl && (

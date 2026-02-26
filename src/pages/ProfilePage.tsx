@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { Ticket, TicketStatus, User } from "../types";
 
@@ -28,6 +28,12 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(authUser.profileImageUrl ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDisplayName(authUser.name);
+    setProfileImageUrl(authUser.profileImageUrl ?? null);
+  }, [authUser.name, authUser.profileImageUrl]);
 
   const createdByMe = useMemo(() => tickets.filter((ticket) => ticket.createdById === authUser.id), [tickets, authUser.id]);
   const assignedToMe = useMemo(() => tickets.filter((ticket) => ticket.assignedToId === authUser.id), [tickets, authUser.id]);
@@ -69,8 +75,10 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
       });
       onProfileUpdated(updated);
       setError(null);
+      setSuccessMessage("Profile updated successfully");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not update profile");
+      setSuccessMessage(null);
     } finally {
       setBusy(false);
     }
@@ -91,7 +99,17 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
           <p>No profile image yet.</p>
         )}
 
-        <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Display name" />
+        <label className="date-filter">
+          Display name (shown in dashboard)
+          <input
+            value={displayName}
+            onChange={(event) => {
+              setDisplayName(event.target.value);
+              setSuccessMessage(null);
+            }}
+            placeholder="Display name"
+          />
+        </label>
         <input type="file" accept="image/*" onChange={(event) => void handleImageChange(event)} />
 
         <div className="actions">
@@ -180,6 +198,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
       )}
 
       {error && <p className="error">{error}</p>}
+      {successMessage && <p>{successMessage}</p>}
 
       <button onClick={onBack}>Back to Dashboard</button>
     </section>
