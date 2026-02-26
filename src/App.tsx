@@ -5,12 +5,13 @@ import {
   CreateTicketPage,
   DashboardPage,
   EditTicketPage,
+  ProfilePage,
   TicketDetailPage,
   TicketResolutionPage,
 } from "./pages";
 import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 
-type Page = "dashboard" | "create" | "detail" | "edit" | "resolution";
+type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile";
 
 function App() {
   const [authUser, setAuthUser] = useState<User | null>(null);
@@ -334,7 +335,12 @@ function App() {
       <header className="page-header">
         <h1>TicketFlow – Internal IT Support Management System</h1>
         <div className="actions">
-          <span>{authUser.name}</span>
+          <button onClick={() => setPage("profile")} className="profile-trigger">
+            {authUser.profileImageUrl && (
+              <img src={authUser.profileImageUrl} alt="Profile" className="avatar-small" />
+            )}
+            <span>{authUser.name}</span>
+          </button>
           <button onClick={() => setPage("dashboard")}>Dashboard</button>
           <button onClick={() => setPage("create")} disabled={users.length === 0}>
             Create Ticket
@@ -371,6 +377,25 @@ function App() {
           canEditStatus={authUser.role !== "EMPLOYEE"}
           onSubmit={handleCreateTicket}
           onCancel={() => setPage("dashboard")}
+        />
+      )}
+
+      {page === "profile" && (
+        <ProfilePage
+          authUser={authUser}
+          tickets={tickets}
+          onBack={() => setPage("dashboard")}
+          onProfileUpdated={(updatedUser) => {
+            setAuthUser(updatedUser);
+            setUsers((prev) => prev.map((item) => (item.id === updatedUser.id ? { ...item, ...updatedUser } : item)));
+            setTickets((prev) =>
+              prev.map((ticket) => ({
+                ...ticket,
+                createdBy: ticket.createdById === updatedUser.id ? { ...ticket.createdBy, ...updatedUser } : ticket.createdBy,
+                assignedTo: ticket.assignedToId === updatedUser.id ? { ...ticket.assignedTo, ...updatedUser } : ticket.assignedTo,
+              })),
+            );
+          }}
         />
       )}
 

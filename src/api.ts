@@ -46,6 +46,8 @@ export const api = {
     request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
   me: () => request<User>("/auth/me"),
   getUsers: () => request<User[]>("/users"),
+  updateMyProfile: (data: { name?: string; profileImageUrl?: string | null }) =>
+    request<User>("/users/me", { method: "PATCH", body: JSON.stringify(data) }),
   createUser: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
   getTasks: () => request<Ticket[]>("/tickets"),

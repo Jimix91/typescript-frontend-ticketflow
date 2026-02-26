@@ -3,6 +3,7 @@ export type User = {
   name: string;
   email: string;
   role?: "ADMIN" | "AGENT" | "EMPLOYEE";
+  profileImageUrl?: string | null;
 };
 
 export type TicketStatus = "OPEN" | "IN_PROGRESS" | "CLOSED";

@@ -48,9 +48,10 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
 
       const matchesCreator = createdByFilter === "ALL" || ticket.createdById === createdByFilter;
 
-      const ticketDate = new Date(ticket.createdAt);
-      const afterFrom = !fromDate || ticketDate >= new Date(`${fromDate}T00:00:00`);
-      const beforeTo = !toDate || ticketDate <= new Date(`${toDate}T23:59:59`);
+      const createdDate = new Date(ticket.createdAt);
+      const closedDate = ticket.status === "CLOSED" ? new Date(ticket.updatedAt) : null;
+      const afterFrom = !fromDate || createdDate >= new Date(`${fromDate}T00:00:00`);
+      const beforeTo = !toDate || (closedDate !== null && closedDate <= new Date(`${toDate}T23:59:59`));
 
       return (
         matchesOmnibox &&
@@ -125,6 +126,10 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           <p>{ticket.description}</p>
           <StatusBadge status={ticket.status} />
           <small>Priority: {ticket.priority}</small>
+          <small>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</small>
+          {ticket.status === "CLOSED" && (
+            <small>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</small>
+          )}
           <div className="actions">
             <button onClick={() => onView(ticket.id)}>Detail</button>
             {canManage && <button onClick={() => onEdit(ticket.id)}>Edit</button>}
@@ -208,7 +213,7 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
         </label>
 
         <label className="date-filter">
-          Created to
+          Closed to
           <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
         </label>
       </section>

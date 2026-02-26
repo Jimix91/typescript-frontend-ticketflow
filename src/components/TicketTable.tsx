@@ -22,6 +22,8 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
             <th>Title</th>
             <th>Status</th>
             <th>Priority</th>
+            <th>Created at</th>
+            <th>Closed at</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -33,6 +35,8 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
                 <StatusBadge status={ticket.status} />
               </td>
               <td>{ticket.priority}</td>
+              <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+              <td>{ticket.status === "CLOSED" ? new Date(ticket.updatedAt).toLocaleDateString() : "-"}</td>
               <td className="actions">
                 <button onClick={() => onView(ticket.id)}>Detail</button>
                 <button onClick={() => onEdit(ticket.id)}>Edit</button>

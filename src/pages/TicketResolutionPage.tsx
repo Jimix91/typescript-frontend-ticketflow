@@ -108,6 +108,8 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
         <p>
           Assigned agent: {ticket.assignedTo?.name ?? authUser.name} · <StatusBadge status={ticket.status} />
         </p>
+        <p>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</p>
+        {ticket.status === "CLOSED" && <p>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</p>}
         <div className="actions">
           <select value={status} onChange={(event) => setStatus(event.target.value as TicketStatus)} disabled={busy}>
             <option value="OPEN">OPEN</option>

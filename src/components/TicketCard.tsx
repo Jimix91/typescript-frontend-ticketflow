@@ -27,6 +27,8 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props
       <p>Created by: {createdByName}</p>
       <p>Assigned to: {assignedToName}</p>
       <p>Priority: {ticket.priority}</p>
+      <p>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</p>
+      {ticket.status === "CLOSED" && <p>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</p>}
       <StatusBadge status={ticket.status} />
       {canManage && (
         <div className="actions">
