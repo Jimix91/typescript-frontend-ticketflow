@@ -1,4 +1,4 @@
-import { CreateTaskInput, Ticket, UpdateTaskInput, User } from "./types";
+import { Comment, CreateCommentInput, CreateTaskInput, Ticket, UpdateTaskInput, User } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5005/api";
 let authToken: string | null = null;
@@ -49,10 +49,14 @@ export const api = {
   createUser: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
   getTasks: () => request<Ticket[]>("/tickets"),
+  getTaskById: (taskId: number) => request<Ticket>(`/tickets/${taskId}`),
   createTask: (data: CreateTaskInput) =>
     request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
   updateTask: (taskId: number, data: UpdateTaskInput) =>
     request<Ticket>(`/tickets/${taskId}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTask: (taskId: number) =>
     request<void>(`/tickets/${taskId}`, { method: "DELETE" }),
+  getTaskComments: (taskId: number) => request<Comment[]>(`/tickets/${taskId}/comments`),
+  createTaskComment: (taskId: number, data: CreateCommentInput) =>
+    request<Comment>(`/tickets/${taskId}/comments`, { method: "POST", body: JSON.stringify(data) }),
 };

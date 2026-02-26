@@ -6,10 +6,11 @@ import {
   DashboardPage,
   EditTicketPage,
   TicketDetailPage,
+  TicketResolutionPage,
 } from "./pages";
 import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 
-type Page = "dashboard" | "create" | "detail" | "edit";
+type Page = "dashboard" | "create" | "detail" | "edit" | "resolution";
 
 function App() {
   const [authUser, setAuthUser] = useState<User | null>(null);
@@ -130,6 +131,7 @@ function App() {
       const createdTask = await api.createTask({
         title: values.title,
         description: values.description,
+        imageUrl: values.imageUrl,
         status: values.status,
         priority: values.priority,
         createdById: authUser?.id ?? values.createdById,
@@ -147,6 +149,7 @@ function App() {
       const updatedTask = await api.updateTask(ticketId, {
         title: values.title,
         description: values.description,
+        imageUrl: values.imageUrl,
         status: values.status,
         priority: values.priority,
         assignedToId: values.assignedToId,
@@ -186,12 +189,41 @@ function App() {
     }
   };
 
-  const openTicketDetail = (ticketId: number) => {
-    setActiveTicketId(ticketId);
-    setPage("detail");
+  const refreshTicket = async (ticketId: number) => {
+    const freshTicket = await api.getTaskById(ticketId);
+    setTickets((prev) => {
+      const exists = prev.some((ticket) => ticket.id === ticketId);
+      if (!exists) {
+        return [freshTicket, ...prev];
+      }
+
+      return prev.map((ticket) => (ticket.id === ticketId ? freshTicket : ticket));
+    });
+    return freshTicket;
   };
 
-  const openTicketEdit = (ticketId: number) => {
+  const openTicketDetail = async (ticketId: number) => {
+    let targetTicket = tickets.find((ticket) => ticket.id === ticketId);
+    try {
+      targetTicket = await refreshTicket(ticketId);
+    } catch (_error) {
+    }
+
+    setActiveTicketId(ticketId);
+
+    const shouldOpenResolution =
+      authUser?.role === "AGENT" &&
+      targetTicket?.assignedToId === authUser.id;
+
+    setPage(shouldOpenResolution ? "resolution" : "detail");
+  };
+
+  const openTicketEdit = async (ticketId: number) => {
+    try {
+      await refreshTicket(ticketId);
+    } catch (_error) {
+    }
+
     setActiveTicketId(ticketId);
     setPage("edit");
   };
@@ -326,8 +358,8 @@ function App() {
         <DashboardPage
           tickets={tickets}
           users={users}
-          onView={openTicketDetail}
-          onEdit={openTicketEdit}
+          onView={(ticketId) => void openTicketDetail(ticketId)}
+          onEdit={(ticketId) => void openTicketEdit(ticketId)}
           onDelete={(ticketId) => setConfirmDeleteId(ticketId)}
           onMoveStatus={handleMoveStatus}
         />
@@ -346,8 +378,19 @@ function App() {
           ticket={activeTicket}
           users={users}
           onBack={() => setPage("dashboard")}
-          onEdit={() => openTicketEdit(activeTicket.id)}
+          onEdit={() => void openTicketEdit(activeTicket.id)}
           onDelete={() => setConfirmDeleteId(activeTicket.id)}
+        />
+      )}
+
+      {page === "resolution" && activeTicket && authUser && (
+        <TicketResolutionPage
+          ticket={activeTicket}
+          authUser={authUser}
+          onBack={() => setPage("dashboard")}
+          onTicketUpdate={(updated) => {
+            setTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
+          }}
         />
       )}
 
@@ -360,7 +403,7 @@ function App() {
         />
       )}
 
-      {((page === "detail" || page === "edit") && !activeTicket) && (
+      {((page === "detail" || page === "edit" || page === "resolution") && !activeTicket) && (
         <section className="card">
           <p>Ticket not found.</p>
           <button onClick={() => setPage("dashboard")}>Back to dashboard</button>

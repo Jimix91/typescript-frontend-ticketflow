@@ -12,6 +12,7 @@ export type Ticket = {
   id: number;
   title: string;
   description: string;
+  imageUrl?: string | null;
   status: TicketStatus;
   priority: TicketPriority;
   createdAt: string;
@@ -25,6 +26,7 @@ export type Ticket = {
 export type CreateTaskInput = {
   title: string;
   description: string;
+  imageUrl?: string | null;
   createdById: number;
   assignedToId?: number | null;
   status?: TicketStatus;
@@ -34,14 +36,31 @@ export type CreateTaskInput = {
 export type UpdateTaskInput = {
   title?: string;
   description?: string | null;
+  imageUrl?: string | null;
   status?: TicketStatus;
   priority?: TicketPriority;
   assignedToId?: number | null;
 };
 
+export type Comment = {
+  id: number;
+  content: string;
+  imageUrl?: string | null;
+  ticketId: number;
+  authorId: number;
+  createdAt: string;
+  author: User;
+};
+
+export type CreateCommentInput = {
+  content: string;
+  imageUrl?: string | null;
+};
+
 export type TicketFormValues = {
   title: string;
   description: string;
+  imageUrl?: string | null;
   status: TicketStatus;
   priority: TicketPriority;
   createdById: number;

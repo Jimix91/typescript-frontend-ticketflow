@@ -20,6 +20,9 @@ export function TicketCard({ ticket, users, onEdit, onDelete }: Props) {
     <section className="card">
       <h2>{ticket.title}</h2>
       <p>{ticket.description}</p>
+      {ticket.imageUrl && (
+        <img src={ticket.imageUrl} alt="Ticket attachment" style={{ maxWidth: "320px", borderRadius: "8px" }} />
+      )}
       <p>Created by: {createdByName}</p>
       <p>Assigned to: {assignedToName}</p>
       <p>Priority: {ticket.priority}</p>
