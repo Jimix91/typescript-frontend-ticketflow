@@ -355,6 +355,7 @@ function App() {
 
       {page === "dashboard" && (
         <DashboardPage
+          authUser={authUser}
           tickets={tickets}
           users={users}
           onView={(ticketId) => void openTicketDetail(ticketId)}
@@ -367,6 +368,7 @@ function App() {
       {page === "create" && (
         <CreateTicketPage
           users={users}
+          canEditStatus={authUser.role !== "EMPLOYEE"}
           onSubmit={handleCreateTicket}
           onCancel={() => setPage("dashboard")}
         />
@@ -398,6 +400,7 @@ function App() {
         <EditTicketPage
           ticket={activeTicket}
           users={users}
+          canEditStatus={authUser.role !== "EMPLOYEE"}
           onSubmit={(values) => handleUpdateTicket(activeTicket.id, values)}
           onCancel={() => setPage("detail")}
         />

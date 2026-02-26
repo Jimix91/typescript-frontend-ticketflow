@@ -4,11 +4,12 @@ import { Ticket, TicketFormValues, TicketPriority, TicketStatus, User } from "..
 type Props = {
   users: User[];
   initialTicket?: Ticket;
+  canEditStatus?: boolean;
   onSubmit: (values: TicketFormValues) => Promise<void> | void;
   onCancel: () => void;
 };
 
-export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) {
+export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmit, onCancel }: Props) {
   const agentUsers = users.filter((user) => user.role === "AGENT");
 
   const [title, setTitle] = useState(initialTicket?.title ?? "");
@@ -41,11 +42,13 @@ export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) 
       return;
     }
 
+    const effectiveStatus = canEditStatus ? status : initialTicket?.status ?? "OPEN";
+
     await onSubmit({
       title: title.trim(),
       description: description.trim(),
       imageUrl,
-      status,
+      status: effectiveStatus,
       priority,
       assignedToId,
     });
@@ -79,11 +82,13 @@ export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) 
           </button>
         )}
 
-        <select value={status} onChange={(event) => setStatus(event.target.value as TicketStatus)}>
-          <option value="OPEN">OPEN</option>
-          <option value="IN_PROGRESS">IN_PROGRESS</option>
-          <option value="CLOSED">CLOSED</option>
-        </select>
+        {canEditStatus && (
+          <select value={status} onChange={(event) => setStatus(event.target.value as TicketStatus)}>
+            <option value="OPEN">OPEN</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="CLOSED">CLOSED</option>
+          </select>
+        )}
 
         <select value={priority} onChange={(event) => setPriority(event.target.value as TicketPriority)}>
           <option value="LOW">LOW</option>

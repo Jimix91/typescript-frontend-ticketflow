@@ -3,6 +3,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { Ticket, TicketPriority, TicketStatus, User } from "../types";
 
 type Props = {
+  authUser: User;
   tickets: Ticket[];
   users: User[];
   onView: (ticketId: number) => void;
@@ -11,7 +12,7 @@ type Props = {
   onMoveStatus: (ticketId: number, status: TicketStatus) => void;
 };
 
-export function DashboardPage({ tickets, users, onView, onEdit, onDelete, onMoveStatus }: Props) {
+export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDelete, onMoveStatus }: Props) {
   const [omnibox, setOmnibox] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | TicketStatus>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<"ALL" | TicketPriority>("ALL");
@@ -67,6 +68,14 @@ export function DashboardPage({ tickets, users, onView, onEdit, onDelete, onMove
   const inProgressTickets = filteredTickets.filter((ticket) => ticket.status === "IN_PROGRESS");
   const closedTickets = filteredTickets.filter((ticket) => ticket.status === "CLOSED");
 
+  const canDragTicket = (ticket: Ticket) => {
+    if (authUser.role === "ADMIN") {
+      return true;
+    }
+
+    return authUser.role === "AGENT" && ticket.assignedToId === authUser.id;
+  };
+
   const handleDragStart = (event: DragEvent<HTMLElement>, ticketId: number) => {
     event.dataTransfer.setData("ticketId", String(ticketId));
   };
@@ -90,11 +99,27 @@ export function DashboardPage({ tickets, users, onView, onEdit, onDelete, onMove
         {title} ({columnTickets.length})
       </h3>
       {columnTickets.map((ticket) => (
+        (() => {
+          const canManage =
+            authUser.role === "ADMIN" ||
+            (authUser.role === "EMPLOYEE" && ticket.createdById === authUser.id) ||
+            (authUser.role === "AGENT" && ticket.assignedToId === authUser.id);
+
+          const canDrag = canDragTicket(ticket);
+
+          return (
         <article
           key={ticket.id}
           className="kanban-card"
-          draggable
-          onDragStart={(event) => handleDragStart(event, ticket.id)}
+          draggable={canDrag}
+          onDragStart={(event) => {
+            if (!canDrag) {
+              event.preventDefault();
+              return;
+            }
+
+            handleDragStart(event, ticket.id);
+          }}
         >
           <strong>{ticket.title}</strong>
           <p>{ticket.description}</p>
@@ -102,10 +127,12 @@ export function DashboardPage({ tickets, users, onView, onEdit, onDelete, onMove
           <small>Priority: {ticket.priority}</small>
           <div className="actions">
             <button onClick={() => onView(ticket.id)}>Detail</button>
-            <button onClick={() => onEdit(ticket.id)}>Edit</button>
-            <button onClick={() => onDelete(ticket.id)}>Delete</button>
+            {canManage && <button onClick={() => onEdit(ticket.id)}>Edit</button>}
+            {canManage && <button onClick={() => onDelete(ticket.id)}>Delete</button>}
           </div>
         </article>
+          );
+        })()
       ))}
     </div>
   );

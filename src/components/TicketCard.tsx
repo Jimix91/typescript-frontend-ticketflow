@@ -6,9 +6,10 @@ type Props = {
   users: User[];
   onEdit: () => void;
   onDelete: () => void;
+  canManage: boolean;
 };
 
-export function TicketCard({ ticket, users, onEdit, onDelete }: Props) {
+export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props) {
   const createdByName =
     ticket.createdBy?.name ?? users.find((user) => user.id === ticket.createdById)?.name ?? "Unknown";
   const assignedToName =
@@ -27,10 +28,12 @@ export function TicketCard({ ticket, users, onEdit, onDelete }: Props) {
       <p>Assigned to: {assignedToName}</p>
       <p>Priority: {ticket.priority}</p>
       <StatusBadge status={ticket.status} />
-      <div className="actions">
-        <button onClick={onEdit}>Edit Ticket</button>
-        <button onClick={onDelete}>Delete Ticket</button>
-      </div>
+      {canManage && (
+        <div className="actions">
+          <button onClick={onEdit}>Edit Ticket</button>
+          <button onClick={onDelete}>Delete Ticket</button>
+        </div>
+      )}
     </section>
   );
 }

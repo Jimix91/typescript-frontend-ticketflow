@@ -20,10 +20,12 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
   const [savingComment, setSavingComment] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canComment =
+  const canManage =
     authUser.role === "ADMIN" ||
-    ticket.createdById === authUser.id ||
-    ticket.assignedToId === authUser.id;
+    (authUser.role === "EMPLOYEE" && ticket.createdById === authUser.id) ||
+    (authUser.role === "AGENT" && ticket.assignedToId === authUser.id);
+
+  const canComment = canManage;
 
   useEffect(() => {
     const loadComments = async () => {
@@ -86,7 +88,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
   return (
     <section>
       <h2>Ticket Detail</h2>
-      <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} />
+      <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} canManage={canManage} />
 
       {canComment && (
         <section className="card">
