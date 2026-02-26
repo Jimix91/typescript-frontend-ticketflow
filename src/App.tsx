@@ -134,7 +134,6 @@ function App() {
         imageUrl: values.imageUrl,
         status: values.status,
         priority: values.priority,
-        createdById: authUser?.id ?? values.createdById,
         assignedToId: values.assignedToId,
       });
       setTickets((prev) => [createdTask, ...prev]);
@@ -376,6 +375,7 @@ function App() {
       {page === "detail" && activeTicket && (
         <TicketDetailPage
           ticket={activeTicket}
+          authUser={authUser}
           users={users}
           onBack={() => setPage("dashboard")}
           onEdit={() => void openTicketEdit(activeTicket.id)}

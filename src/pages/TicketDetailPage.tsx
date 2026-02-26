@@ -1,19 +1,29 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import { TicketCard } from "../components/TicketCard";
 import { Comment, Ticket, User } from "../types";
 
 type Props = {
   ticket: Ticket;
+  authUser: User;
   users: User[];
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-export function TicketDetailPage({ ticket, users, onBack, onEdit, onDelete }: Props) {
+export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDelete }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
+  const [commentText, setCommentText] = useState("");
+  const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
+  const [savingComment, setSavingComment] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const canComment =
+    authUser.role === "ADMIN" ||
+    ticket.createdById === authUser.id ||
+    ticket.assignedToId === authUser.id;
 
   useEffect(() => {
     const loadComments = async () => {
@@ -21,7 +31,8 @@ export function TicketDetailPage({ ticket, users, onBack, onEdit, onDelete }: Pr
         setLoadingComments(true);
         const payload = await api.getTaskComments(ticket.id);
         setComments(payload);
-      } catch (_error) {
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Could not load comments");
       } finally {
         setLoadingComments(false);
       }
@@ -30,10 +41,84 @@ export function TicketDetailPage({ ticket, users, onBack, onEdit, onDelete }: Pr
     void loadComments();
   }, [ticket.id]);
 
+  const handleCommentImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setCommentImageUrl(null);
+      return;
+    }
+
+    const reader = new FileReader();
+    const encodedImage = await new Promise<string>((resolve, reject) => {
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Could not read image"));
+      reader.readAsDataURL(file);
+    });
+
+    setCommentImageUrl(encodedImage);
+  };
+
+  const handleAddComment = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (!commentText.trim() && !commentImageUrl) {
+      return;
+    }
+
+    try {
+      setSavingComment(true);
+      const created = await api.createTaskComment(ticket.id, {
+        content: commentText.trim() || "Image update",
+        imageUrl: commentImageUrl,
+      });
+
+      setComments((prev) => [...prev, created]);
+      setCommentText("");
+      setCommentImageUrl(null);
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not add comment");
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
   return (
     <section>
       <h2>Ticket Detail</h2>
       <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} />
+
+      {canComment && (
+        <section className="card">
+          <h3>Add Comment</h3>
+          <form onSubmit={(event) => void handleAddComment(event)} className="grid-form">
+            <textarea
+              value={commentText}
+              onChange={(event) => setCommentText(event.target.value)}
+              placeholder="Write your update"
+              rows={3}
+            />
+            <input type="file" accept="image/*" onChange={(event) => void handleCommentImageChange(event)} />
+            {commentImageUrl && (
+              <img
+                src={commentImageUrl}
+                alt="Comment attachment preview"
+                style={{ maxWidth: "260px", borderRadius: "8px" }}
+              />
+            )}
+            <div className="actions">
+              <button type="submit" disabled={savingComment}>
+                Add Comment
+              </button>
+              {commentImageUrl && (
+                <button type="button" onClick={() => setCommentImageUrl(null)} disabled={savingComment}>
+                  Remove Image
+                </button>
+              )}
+            </div>
+          </form>
+        </section>
+      )}
 
       <section className="card">
         <h3>Comments</h3>
@@ -55,6 +140,8 @@ export function TicketDetailPage({ ticket, users, onBack, onEdit, onDelete }: Pr
           ))
         )}
       </section>
+
+      {error && <p className="error">{error}</p>}
 
       <button onClick={onBack}>Back to Dashboard</button>
     </section>

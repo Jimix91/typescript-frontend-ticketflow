@@ -27,7 +27,6 @@ export type CreateTaskInput = {
   title: string;
   description: string;
   imageUrl?: string | null;
-  createdById: number;
   assignedToId?: number | null;
   status?: TicketStatus;
   priority?: TicketPriority;
@@ -63,6 +62,5 @@ export type TicketFormValues = {
   imageUrl?: string | null;
   status: TicketStatus;
   priority: TicketPriority;
-  createdById: number;
   assignedToId: number | null;
 };

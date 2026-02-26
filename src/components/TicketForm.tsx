@@ -9,14 +9,13 @@ type Props = {
 };
 
 export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) {
-  const firstUserId = users[0]?.id ?? 0;
+  const agentUsers = users.filter((user) => user.role === "AGENT");
 
   const [title, setTitle] = useState(initialTicket?.title ?? "");
   const [description, setDescription] = useState(initialTicket?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(initialTicket?.imageUrl ?? null);
   const [status, setStatus] = useState<TicketStatus>(initialTicket?.status ?? "OPEN");
   const [priority, setPriority] = useState<TicketPriority>(initialTicket?.priority ?? "MEDIUM");
-  const [createdById, setCreatedById] = useState<number>(initialTicket?.createdById ?? firstUserId);
   const [assignedToId, setAssignedToId] = useState<number | null>(initialTicket?.assignedToId ?? null);
 
   const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +37,7 @@ export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) 
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!title.trim() || !description.trim() || !createdById) {
+    if (!title.trim() || !description.trim()) {
       return;
     }
 
@@ -48,7 +47,6 @@ export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) 
       imageUrl,
       status,
       priority,
-      createdById,
       assignedToId,
     });
   };
@@ -94,23 +92,11 @@ export function TicketForm({ users, initialTicket, onSubmit, onCancel }: Props) 
         </select>
 
         <select
-          value={createdById}
-          onChange={(event) => setCreatedById(Number(event.target.value))}
-          disabled={Boolean(initialTicket)}
-        >
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name} ({user.email})
-            </option>
-          ))}
-        </select>
-
-        <select
           value={assignedToId ?? ""}
           onChange={(event) => setAssignedToId(event.target.value ? Number(event.target.value) : null)}
         >
           <option value="">Unassigned</option>
-          {users.map((user) => (
+          {agentUsers.map((user) => (
             <option key={user.id} value={user.id}>
               {user.name} ({user.email})
             </option>
