@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: Arial, sans-serif;
   color: #0f172a;
@@ -60,14 +64,10 @@ body.theme-dark {
 }
 
 .app-logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 200px;
-  height: 200px;
+  display: block;
+  width: 360px;
+  height: 240px;
   object-fit: contain;
-  clip-path: inset(18% 16% 20% 14%);
-  pointer-events: none;
 }
 
 .card {

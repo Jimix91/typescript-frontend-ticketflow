@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, setApiToken } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
-import ticketflowLogo from "./media/ticketflow_logo_transparent.png";
+import ticketflowLogo from "./media/logo4.png";
 import {
   CreateTicketPage,
   DashboardPage,
@@ -15,6 +15,11 @@ import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile";
 
 function App() {
+  const navButtonClass =
+    "inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50";
+  const summaryChipClass =
+    "rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold";
+
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authToken, setAuthTokenState] = useState<string | null>(() => localStorage.getItem("ticketflow-token"));
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -39,6 +44,14 @@ function App() {
     () => tickets.find((ticket) => ticket.id === activeTicketId) ?? null,
     [tickets, activeTicketId],
   );
+
+  const ticketSummary = useMemo(() => {
+    const open = tickets.filter((ticket) => ticket.status === "OPEN").length;
+    const inProgress = tickets.filter((ticket) => ticket.status === "IN_PROGRESS").length;
+    const closed = tickets.filter((ticket) => ticket.status === "CLOSED").length;
+
+    return { open, inProgress, closed };
+  }, [tickets]);
 
   const loadData = useCallback(async (showLoader: boolean) => {
     try {
@@ -285,11 +298,16 @@ function App() {
   if (!authToken || !authUser) {
     return (
       <main className="container">
-        <header className="page-header">
-          <h1 className="app-title">
-            <img src={ticketflowLogo} alt="TicketFlow logo" className="app-logo" />
-            <span>Internal IT Support Management System</span>
-          </h1>
+        <header className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-md">
+          <div className="flex items-center justify-between gap-4">
+              <div className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-2 shadow-sm">
+              <img
+                src={ticketflowLogo}
+                alt="TicketFlow logo"
+                className="app-logo"
+              />
+            </div>
+          </div>
         </header>
 
         {errorMessage && <p className="error">{errorMessage}</p>}
@@ -336,26 +354,51 @@ function App() {
 
   return (
     <main className="container">
-      <header className="page-header">
-        <h1 className="app-title">
-          <img src={ticketflowLogo} alt="TicketFlow logo" className="app-logo" />
-          <span>Internal IT Support Management System</span>
-        </h1>
-        <div className="actions">
-          <button onClick={() => setPage("profile")} className="profile-trigger">
-            {authUser.profileImageUrl && (
-              <img src={authUser.profileImageUrl} alt="Profile" className="avatar-small" />
-            )}
-            <span>{authUser.name}</span>
-          </button>
-          <button onClick={() => setPage("dashboard")}>Dashboard</button>
-          <button onClick={() => setPage("create")} disabled={users.length === 0}>
-            Create Ticket
-          </button>
-          <button onClick={() => setIsDarkMode((prev) => !prev)}>
-            {isDarkMode ? "Light Mode" : "Dark Mode"}
-          </button>
-          <button onClick={handleLogout}>Log out</button>
+      <header className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-md">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-2 shadow-sm">
+            <img
+              src={ticketflowLogo}
+              alt="TicketFlow logo"
+              className="app-logo"
+            />
+          </div>
+
+          <div className="flex min-h-[150px] flex-1 flex-col justify-between gap-5">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button onClick={() => setPage("dashboard")} className={navButtonClass}>Dashboard</button>
+              <button onClick={() => setPage("create")} disabled={users.length === 0} className={navButtonClass}>
+                Create Ticket
+              </button>
+              <button onClick={() => setIsDarkMode((prev) => !prev)} className={navButtonClass}>
+                {isDarkMode ? "Light Mode" : "Dark Mode"}
+              </button>
+              <button onClick={handleLogout} className={navButtonClass}>Log out</button>
+            </div>
+
+            <div className="flex flex-1 items-center justify-center pt-6">
+              <div className="flex flex-col items-center justify-center gap-3">
+                <button
+                  onClick={() => setPage("profile")}
+                  className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--card)] px-8 py-3.5 text-xl font-bold text-[var(--text)] shadow-sm"
+                >
+                  {authUser.profileImageUrl ? (
+                    <img src={authUser.profileImageUrl} alt="Profile" className="h-12 w-12 rounded-full border border-[var(--border)] object-cover" />
+                  ) : (
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-lg font-bold">
+                      {authUser.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span>{authUser.name}</span>
+                </button>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                  <span className={summaryChipClass}>Open: {ticketSummary.open}</span>
+                  <span className={summaryChipClass}>In Progress: {ticketSummary.inProgress}</span>
+                  <span className={summaryChipClass}>Closed: {ticketSummary.closed}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
