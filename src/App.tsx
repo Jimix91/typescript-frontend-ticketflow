@@ -16,9 +16,11 @@ type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile
 
 function App() {
   const navButtonClass =
-    "inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50";
+    "ui-btn-secondary w-full justify-start lg:w-auto";
   const summaryChipClass =
-    "rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold";
+    "ui-chip";
+  const primaryButtonClass = "ui-btn-primary";
+  const secondaryButtonClass = "ui-btn-secondary";
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authToken, setAuthTokenState] = useState<string | null>(() => localStorage.getItem("ticketflow-token"));
@@ -128,7 +130,7 @@ function App() {
   }, [loadData]);
 
   useEffect(() => {
-    document.body.classList.toggle("theme-dark", isDarkMode);
+    document.documentElement.classList.toggle("dark", isDarkMode);
     localStorage.setItem("ticketflow-theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
@@ -292,80 +294,93 @@ function App() {
   };
 
   if (loading) {
-    return <main className="container">Loading...</main>;
+    return (
+      <main className="ui-shell flex items-center justify-center">
+        <p className="ui-card text-sm font-medium text-slate-700 dark:text-slate-200">
+          Loading TicketFlow...
+        </p>
+      </main>
+    );
   }
 
   if (!authToken || !authUser) {
     return (
-      <main className="container">
-        <header className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-md">
-          <div className="flex items-center justify-between gap-4">
-              <div className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-2 shadow-sm">
-              <img
-                src={ticketflowLogo}
-                alt="TicketFlow logo"
-                className="app-logo"
-              />
+      <main className="ui-shell flex items-center justify-center">
+        <section className="w-full max-w-3xl rounded-3xl border border-slate-200 bg-surface-0 p-6 shadow-elevated dark:border-slate-800 dark:bg-surface-dark-1 sm:p-8">
+          <header className="ui-logo-wrap mb-8">
+            <div className="flex items-center justify-center">
+              <img src={ticketflowLogo} alt="TicketFlow logo" className="ui-logo" />
             </div>
-          </div>
-        </header>
+          </header>
 
-        {errorMessage && <p className="error">{errorMessage}</p>}
-
-        <section className="card grid-form">
-          <h2>{authMode === "login" ? "Log in" : "Create account"}</h2>
-
-          {authMode === "register" && (
-            <input
-              placeholder="Your name"
-              value={authName}
-              onChange={(event) => setAuthName(event.target.value)}
-            />
+          {errorMessage && (
+            <p className="ui-alert-error mb-4">
+              {errorMessage}
+            </p>
           )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={authEmail}
-            onChange={(event) => setAuthEmail(event.target.value)}
-          />
+          <section className="ui-card">
+            <h2 className="ui-title mb-4">
+              {authMode === "login" ? "Welcome back" : "Create your account"}
+            </h2>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={authPassword}
-            onChange={(event) => setAuthPassword(event.target.value)}
-          />
+            <div className="grid gap-3">
+              {authMode === "register" && (
+                <input
+                  placeholder="Your name"
+                  value={authName}
+                  onChange={(event) => setAuthName(event.target.value)}
+                />
+              )}
 
-          <div className="actions">
-            {authMode === "login" ? (
-              <button onClick={() => void handleLogin()}>Log in</button>
-            ) : (
-              <button onClick={() => void handleRegister()}>Register</button>
-            )}
-            <button onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}>
-              {authMode === "login" ? "Need an account?" : "Already have an account?"}
-            </button>
-          </div>
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(event) => setAuthEmail(event.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(event) => setAuthPassword(event.target.value)}
+              />
+
+              <div className="mt-2 flex flex-wrap gap-3">
+                {authMode === "login" ? (
+                  <button className={primaryButtonClass} onClick={() => void handleLogin()}>
+                    Log in
+                  </button>
+                ) : (
+                  <button className={primaryButtonClass} onClick={() => void handleRegister()}>
+                    Register
+                  </button>
+                )}
+                <button
+                  className={secondaryButtonClass + " bg-transparent"}
+                  onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
+                >
+                  {authMode === "login" ? "Need an account?" : "Already have an account?"}
+                </button>
+            </div>
+            </div>
+          </section>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="container">
-      <header className="mb-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-4 shadow-md">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="shrink-0 rounded-xl border border-[var(--border)] bg-[var(--card)]/80 p-2 shadow-sm">
-            <img
-              src={ticketflowLogo}
-              alt="TicketFlow logo"
-              className="app-logo"
-            />
-          </div>
+    <main className="ui-shell lg:pl-[22rem]">
+      <header className="ui-topbar mb-5 lg:fixed lg:left-6 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[20rem] lg:flex-col lg:overflow-y-auto lg:p-5">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
+            <div className="ui-logo-wrap">
+              <img src={ticketflowLogo} alt="TicketFlow logo" className="ui-logo" />
+            </div>
 
-          <div className="flex min-h-[150px] flex-1 flex-col justify-between gap-5">
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="grid gap-2">
               <button onClick={() => setPage("dashboard")} className={navButtonClass}>Dashboard</button>
               <button onClick={() => setPage("create")} disabled={users.length === 0} className={navButtonClass}>
                 Create Ticket
@@ -375,38 +390,47 @@ function App() {
               </button>
               <button onClick={handleLogout} className={navButtonClass}>Log out</button>
             </div>
+          </div>
 
-            <div className="flex flex-1 items-center justify-center pt-6">
-              <div className="flex flex-col items-center justify-center gap-3">
-                <button
-                  onClick={() => setPage("profile")}
-                  className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--card)] px-8 py-3.5 text-xl font-bold text-[var(--text)] shadow-sm"
-                >
-                  {authUser.profileImageUrl ? (
-                    <img src={authUser.profileImageUrl} alt="Profile" className="h-12 w-12 rounded-full border border-[var(--border)] object-cover" />
-                  ) : (
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] text-lg font-bold">
-                      {authUser.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <span>{authUser.name}</span>
-                </button>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-                  <span className={summaryChipClass}>Open: {ticketSummary.open}</span>
-                  <span className={summaryChipClass}>In Progress: {ticketSummary.inProgress}</span>
-                  <span className={summaryChipClass}>Closed: {ticketSummary.closed}</span>
-                </div>
-              </div>
+          <div className="ui-card-soft flex flex-col gap-4 lg:mt-auto">
+            <button
+              onClick={() => setPage("profile")}
+              className="ui-btn-secondary inline-flex w-full items-center justify-start gap-3 rounded-xl"
+            >
+              {authUser.profileImageUrl ? (
+                <img src={authUser.profileImageUrl} alt="Profile" className="h-10 w-10 rounded-full border border-slate-300 object-cover dark:border-slate-700" />
+              ) : (
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-sm font-bold dark:border-slate-700">
+                  {authUser.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span>{authUser.name}</span>
+            </button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={summaryChipClass}>Open: {ticketSummary.open}</span>
+              <span className={summaryChipClass}>In Progress: {ticketSummary.inProgress}</span>
+              <span className={summaryChipClass}>Closed: {ticketSummary.closed}</span>
             </div>
           </div>
         </div>
       </header>
 
-      {liveNotice && <p className="live-notice">{liveNotice}</p>}
+      {liveNotice && (
+        <p className="ui-alert-success mb-4">
+          {liveNotice}
+        </p>
+      )}
 
-      {errorMessage && <p className="error">{errorMessage}</p>}
+      {errorMessage && (
+        <p className="ui-alert-error mb-4">
+          {errorMessage}
+        </p>
+      )}
       {users.length === 0 && (
-        <p className="card">Create at least one user from the API first (`POST /users`) to create tickets.</p>
+        <p className="ui-alert-info mb-4">
+          Create at least one user from the API first (POST /users) to create tickets.
+        </p>
       )}
 
       {page === "dashboard" && (
@@ -481,10 +505,10 @@ function App() {
         />
       )}
 
-      {((page === "detail" || page === "edit" || page === "resolution") && !activeTicket) && (
-        <section className="card">
-          <p>Ticket not found.</p>
-          <button onClick={() => setPage("dashboard")}>Back to dashboard</button>
+      {(page === "detail" || page === "edit" || page === "resolution") && !activeTicket && (
+        <section className="ui-card">
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">Ticket not found.</p>
+          <button className={secondaryButtonClass} onClick={() => setPage("dashboard")}>Back to dashboard</button>
         </section>
       )}
 

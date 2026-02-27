@@ -86,14 +86,14 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
   };
 
   return (
-    <section>
-      <h2>Ticket Detail</h2>
+    <section className="ui-section-stack">
+      <h2 className="ui-title">Ticket Detail</h2>
       <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} canManage={canManage} />
 
       {canComment && (
-        <section className="card">
-          <h3>Add Comment</h3>
-          <form onSubmit={(event) => void handleAddComment(event)} className="grid-form">
+        <section className="ui-card">
+          <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Add Comment</h3>
+          <form onSubmit={(event) => void handleAddComment(event)} className="grid gap-3">
             <textarea
               value={commentText}
               onChange={(event) => setCommentText(event.target.value)}
@@ -105,15 +105,15 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
               <img
                 src={commentImageUrl}
                 alt="Comment attachment preview"
-                style={{ maxWidth: "260px", borderRadius: "8px" }}
+                className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700"
               />
             )}
-            <div className="actions">
-              <button type="submit" disabled={savingComment}>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" disabled={savingComment} className="ui-btn-primary">
                 Add Comment
               </button>
               {commentImageUrl && (
-                <button type="button" onClick={() => setCommentImageUrl(null)} disabled={savingComment}>
+                <button type="button" onClick={() => setCommentImageUrl(null)} disabled={savingComment} className="ui-btn-secondary">
                   Remove Image
                 </button>
               )}
@@ -122,30 +122,34 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
         </section>
       )}
 
-      <section className="card">
-        <h3>Comments</h3>
+      <section className="ui-card">
+        <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Comments</h3>
         {loadingComments ? (
-          <p>Loading comments...</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Loading comments...</p>
         ) : comments.length === 0 ? (
-          <p>No comments yet.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">No comments yet.</p>
         ) : (
-          comments.map((comment) => (
-            <article key={comment.id} className="task-item">
-              <p>
+          <div className="grid gap-3">
+          {comments.map((comment) => (
+            <article key={comment.id} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 <strong>{comment.author?.name ?? "Unknown"}</strong> · {new Date(comment.createdAt).toLocaleString()}
               </p>
-              <p>{comment.content}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
               {comment.imageUrl && (
-                <img src={comment.imageUrl} alt="Comment attachment" style={{ maxWidth: "260px", borderRadius: "8px" }} />
+                <img src={comment.imageUrl} alt="Comment attachment" className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
               )}
             </article>
-          ))
+          ))}
+          </div>
         )}
       </section>
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="ui-alert-error">{error}</p>}
 
-      <button onClick={onBack}>Back to Dashboard</button>
+      <div>
+        <button onClick={onBack} className="ui-btn-secondary">Back to Dashboard</button>
+      </div>
     </section>
   );
 }

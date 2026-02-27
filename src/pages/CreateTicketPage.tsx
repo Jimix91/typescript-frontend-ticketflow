@@ -10,8 +10,8 @@ type Props = {
 
 export function CreateTicketPage({ users, canEditStatus, onSubmit, onCancel }: Props) {
   return (
-    <section>
-      <h2>Create Ticket</h2>
+    <section className="ui-section-stack">
+      <h2 className="ui-title">Create Ticket</h2>
       <TicketForm users={users} canEditStatus={canEditStatus} onSubmit={onSubmit} onCancel={onCancel} />
     </section>
   );

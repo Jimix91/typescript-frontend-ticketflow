@@ -85,21 +85,21 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
   };
 
   return (
-    <section>
-      <h2>My Profile</h2>
+    <section className="ui-section-stack">
+      <h2 className="ui-title">My Profile</h2>
 
-      <section className="card grid-form">
-        <h3>User Area</h3>
-        <p>Email: {authUser.email}</p>
-        <p>Role: {authUser.role}</p>
+      <section className="ui-card grid gap-3">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">User Area</h3>
+        <p className="text-sm text-slate-700 dark:text-slate-300">Email: {authUser.email}</p>
+        <p className="text-sm text-slate-700 dark:text-slate-300">Role: {authUser.role}</p>
 
         {profileImageUrl ? (
-          <img src={profileImageUrl} alt="Profile" style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover" }} />
+          <img src={profileImageUrl} alt="Profile" className="h-28 w-28 rounded-full border border-slate-200 object-cover dark:border-slate-700" />
         ) : (
-          <p>No profile image yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No profile image yet.</p>
         )}
 
-        <label className="date-filter">
+        <label className="grid gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
           Display name (shown in dashboard)
           <input
             value={displayName}
@@ -112,48 +112,48 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
         </label>
         <input type="file" accept="image/*" onChange={(event) => void handleImageChange(event)} />
 
-        <div className="actions">
-          <button onClick={() => void handleSaveProfile()} disabled={busy}>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={() => void handleSaveProfile()} disabled={busy} className="ui-btn-primary">
             Save Profile
           </button>
-          <button onClick={() => setProfileImageUrl(null)} disabled={busy}>
+          <button onClick={() => setProfileImageUrl(null)} disabled={busy} className="ui-btn-secondary">
             Remove Image
           </button>
         </div>
       </section>
 
-      <section className="card">
-        <h3>Created by Me</h3>
-        <p>Open: {createdSummary.OPEN} · In progress: {createdSummary.IN_PROGRESS} · Closed: {createdSummary.CLOSED}</p>
+      <section className="ui-card">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Created by Me</h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Open: {createdSummary.OPEN} · In progress: {createdSummary.IN_PROGRESS} · Closed: {createdSummary.CLOSED}</p>
         {createdByMe.length === 0 ? (
-          <p>No created tickets yet.</p>
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">No created tickets yet.</p>
         ) : (
-          <ul className="task-list">
+          <ul className="mt-3 grid gap-3">
             {createdByMe.map((ticket) => (
-              <li key={ticket.id} className="task-item">
-                <strong>{ticket.title}</strong>
-                <span>Status: {ticket.status}</span>
-                <span>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                {ticket.status === "CLOSED" && <span>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>}
+              <li key={ticket.id} className="grid gap-1 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
+                <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Status: {ticket.status}</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                {ticket.status === "CLOSED" && <span className="text-sm text-slate-600 dark:text-slate-300">Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>}
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="card">
-        <h3>Assigned to Me</h3>
-        <p>Open: {assignedSummary.OPEN} · In progress: {assignedSummary.IN_PROGRESS} · Closed: {assignedSummary.CLOSED}</p>
+      <section className="ui-card">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Assigned to Me</h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Open: {assignedSummary.OPEN} · In progress: {assignedSummary.IN_PROGRESS} · Closed: {assignedSummary.CLOSED}</p>
         {assignedToMe.length === 0 ? (
-          <p>No assigned tickets yet.</p>
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">No assigned tickets yet.</p>
         ) : (
-          <ul className="task-list">
+          <ul className="mt-3 grid gap-3">
             {assignedToMe.map((ticket) => (
-              <li key={ticket.id} className="task-item">
-                <strong>{ticket.title}</strong>
-                <span>Status: {ticket.status}</span>
-                <span>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                {ticket.status === "CLOSED" && <span>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>}
+              <li key={ticket.id} className="grid gap-1 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
+                <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Status: {ticket.status}</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                {ticket.status === "CLOSED" && <span className="text-sm text-slate-600 dark:text-slate-300">Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>}
               </li>
             ))}
           </ul>
@@ -162,33 +162,33 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
 
       {authUser.role === "AGENT" && (
         <>
-          <section className="card">
-            <h3>My Solved Tickets</h3>
+          <section className="ui-card">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">My Solved Tickets</h3>
             {agentSolved.length === 0 ? (
-              <p>No solved tickets yet.</p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">No solved tickets yet.</p>
             ) : (
-              <ul className="task-list">
+              <ul className="mt-3 grid gap-3">
                 {agentSolved.map((ticket) => (
-                  <li key={ticket.id} className="task-item">
-                    <strong>{ticket.title}</strong>
-                    <span>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>
+                  <li key={ticket.id} className="grid gap-1 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
+                    <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</span>
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
-          <section className="card">
-            <h3>My Open Assigned Tickets</h3>
+          <section className="ui-card">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">My Open Assigned Tickets</h3>
             {agentOpenAssigned.length === 0 ? (
-              <p>No open assigned tickets.</p>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">No open assigned tickets.</p>
             ) : (
-              <ul className="task-list">
+              <ul className="mt-3 grid gap-3">
                 {agentOpenAssigned.map((ticket) => (
-                  <li key={ticket.id} className="task-item">
-                    <strong>{ticket.title}</strong>
-                    <span>Status: {ticket.status}</span>
-                    <span>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                  <li key={ticket.id} className="grid gap-1 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
+                    <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Status: {ticket.status}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">Created at: {new Date(ticket.createdAt).toLocaleDateString()}</span>
                   </li>
                 ))}
               </ul>
@@ -197,10 +197,12 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
         </>
       )}
 
-      {error && <p className="error">{error}</p>}
-      {successMessage && <p>{successMessage}</p>}
+      {error && <p className="ui-alert-error">{error}</p>}
+      {successMessage && <p className="ui-alert-success">{successMessage}</p>}
 
-      <button onClick={onBack}>Back to Dashboard</button>
+      <div>
+        <button onClick={onBack} className="ui-btn-secondary">Back to Dashboard</button>
+      </div>
     </section>
   );
 }

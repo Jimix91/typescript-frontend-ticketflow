@@ -92,11 +92,11 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
 
   const renderColumn = (title: string, status: TicketStatus, columnTickets: Ticket[]) => (
     <div
-      className="kanban-column"
+      className="ui-card min-h-[380px] border-dashed bg-surface-1/80 dark:bg-surface-dark-1"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => handleDrop(event, status)}
     >
-      <h3>
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-200">
         {title} ({columnTickets.length})
       </h3>
       {columnTickets.map((ticket) => (
@@ -111,7 +111,7 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           return (
         <article
           key={ticket.id}
-          className="kanban-card"
+          className="mb-3 grid gap-2 rounded-xl border border-slate-200 bg-surface-0 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-panel dark:border-slate-700 dark:bg-surface-dark-1"
           draggable={canDrag}
           onDragStart={(event) => {
             if (!canDrag) {
@@ -122,18 +122,18 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
             handleDragStart(event, ticket.id);
           }}
         >
-          <strong>{ticket.title}</strong>
-          <p>{ticket.description}</p>
+          <strong className="text-sm font-bold text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{ticket.description}</p>
           <StatusBadge status={ticket.status} />
-          <small>Priority: {ticket.priority}</small>
-          <small>Created at: {new Date(ticket.createdAt).toLocaleDateString()}</small>
+          <small className="text-xs font-medium text-slate-600 dark:text-slate-300">Priority: {ticket.priority}</small>
+          <small className="text-xs text-slate-500 dark:text-slate-400">Created at: {new Date(ticket.createdAt).toLocaleDateString()}</small>
           {ticket.status === "CLOSED" && (
-            <small>Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</small>
+            <small className="text-xs text-slate-500 dark:text-slate-400">Closed at: {new Date(ticket.updatedAt).toLocaleDateString()}</small>
           )}
-          <div className="actions">
-            <button onClick={() => onView(ticket.id)}>Detail</button>
-            {canManage && <button onClick={() => onEdit(ticket.id)}>Edit</button>}
-            {canManage && <button onClick={() => onDelete(ticket.id)}>Delete</button>}
+          <div className="mt-1 flex flex-wrap gap-2">
+            <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
+            {canManage && <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
+            {canManage && <button className="ui-btn-danger px-3 py-1.5 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
           </div>
         </article>
           );
@@ -143,10 +143,10 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
   );
 
   return (
-    <section>
-      <h2>Dashboard</h2>
+    <section className="ui-section-stack">
+      <h2 className="ui-title">Dashboard</h2>
 
-      <section className="card filter-grid">
+      <section className="ui-card grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <input
           value={omnibox}
           onChange={(event) => setOmnibox(event.target.value)}
@@ -207,18 +207,18 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           ))}
         </select>
 
-        <label className="date-filter">
+        <label className="grid gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
           Created from
           <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
         </label>
 
-        <label className="date-filter">
+        <label className="grid gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
           Closed to
           <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
         </label>
       </section>
 
-      <section className="kanban-board">
+      <section className="grid grid-cols-1 gap-4 2xl:grid-cols-3">
         {renderColumn("Open", "OPEN", openTickets)}
         {renderColumn("In Progress", "IN_PROGRESS", inProgressTickets)}
         {renderColumn("Closed", "CLOSED", closedTickets)}
