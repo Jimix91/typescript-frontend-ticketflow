@@ -142,7 +142,9 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           return (
         <article
           key={ticket.id}
-          className="mb-3 flex min-h-[232px] flex-col gap-3 rounded-xl border border-slate-200 bg-surface-0 p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-panel dark:border-slate-700 dark:bg-surface-dark-1"
+          className={`ui-kanban-card mb-3 flex min-h-[232px] flex-col gap-3 rounded-xl border border-slate-200 bg-surface-0 p-3.5 shadow-sm dark:border-slate-700 dark:bg-surface-dark-1 ${
+            canDrag ? "ui-draggable" : "cursor-default"
+          }`}
           draggable={canDrag}
           onDragStart={(event) => {
             if (!canDrag) {
@@ -173,12 +175,13 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
             {ticket.status === "CLOSED" && (
               <small>Closed: {new Date(ticket.updatedAt).toLocaleDateString()}</small>
             )}
+            {canDrag && <small className="text-xs font-medium text-brand-600 dark:text-brand-300">Drag to move</small>}
           </div>
 
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
-            <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
-            {canManage && <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
-            {canManage && <button className="ui-btn-danger px-3 py-1.5 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
+            <button className="ui-btn-secondary ui-focusable px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
+            {canManage && <button className="ui-btn-secondary ui-focusable px-3 py-1.5 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
+            {canManage && <button className="ui-btn-danger ui-focusable px-3 py-1.5 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
           </div>
         </article>
           );
@@ -194,7 +197,7 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
         <p className="ui-page-subtitle">Monitor, prioritize, and move tickets with a productivity-first workflow.</p>
       </div>
 
-      <section className="ui-card grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section className="ui-card grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <input
           value={omnibox}
           onChange={(event) => setOmnibox(event.target.value)}

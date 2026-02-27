@@ -17,8 +17,13 @@
     @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-900;
   }
 
+  input,
+  select {
+    @apply h-11;
+  }
+
   button {
-    @apply transition disabled:cursor-not-allowed disabled:opacity-50;
+    @apply transition duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   textarea {
@@ -77,7 +82,7 @@
   }
 
   .ui-card {
-    @apply rounded-2xl border border-slate-200/70 bg-surface-0 p-4 shadow-panel dark:border-slate-800/70 dark:bg-surface-dark-1 sm:p-5;
+    @apply rounded-2xl border border-slate-200/70 bg-surface-0 p-4 shadow-panel transition-colors duration-200 dark:border-slate-800/70 dark:bg-surface-dark-1 sm:p-5;
   }
 
   .ui-card-soft {
@@ -97,7 +102,7 @@
   }
 
   .ui-btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-300 dark:focus:ring-brand-700;
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-brand-300 active:translate-y-px dark:focus:ring-brand-700;
   }
 
   .ui-btn-primary {
@@ -146,5 +151,35 @@
 
   .ui-table-wrap {
     @apply overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800;
+  }
+
+  .ui-kanban-card {
+    @apply transition duration-150 ease-out;
+  }
+
+  .ui-draggable {
+    @apply cursor-grab hover:-translate-y-0.5 hover:shadow-elevated active:cursor-grabbing;
+  }
+
+  .ui-focusable {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 dark:focus-visible:ring-brand-700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ui-btn,
+    .ui-card,
+    .ui-kanban-card,
+    .ui-draggable {
+      transition-duration: 0ms;
+      transform: none;
+    }
+  }
+
+  .ui-th {
+    @apply border-b border-slate-200 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:text-slate-300;
+  }
+
+  .ui-td {
+    @apply border-b border-slate-100 px-3 py-3 text-sm text-slate-700 dark:border-slate-800/70 dark:text-slate-300;
   }
 }
