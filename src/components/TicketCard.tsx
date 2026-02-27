@@ -17,6 +17,13 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props
     users.find((user) => user.id === ticket.assignedToId)?.name ??
     "Unassigned";
 
+  const priorityBadgeClass =
+    ticket.priority === "HIGH"
+      ? "ui-priority border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300"
+      : ticket.priority === "MEDIUM"
+        ? "ui-priority border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-300"
+        : "ui-priority border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300";
+
   return (
     <section className="ui-card">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -32,7 +39,12 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props
       <div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
         <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created by:</span> {createdByName}</p>
         <p><span className="font-semibold text-slate-800 dark:text-slate-200">Assigned to:</span> {assignedToName}</p>
-        <p><span className="font-semibold text-slate-800 dark:text-slate-200">Priority:</span> {ticket.priority}</p>
+        <p>
+          <span className={priorityBadgeClass}>
+            <span className="ui-priority-dot bg-current" />
+            Priority {ticket.priority}
+          </span>
+        </p>
         <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created at:</span> {new Date(ticket.createdAt).toLocaleDateString()}</p>
         {ticket.status === "CLOSED" && <p><span className="font-semibold text-slate-800 dark:text-slate-200">Closed at:</span> {new Date(ticket.updatedAt).toLocaleDateString()}</p>}
       </div>

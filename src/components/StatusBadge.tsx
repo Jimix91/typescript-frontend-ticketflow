@@ -11,9 +11,16 @@ export function StatusBadge({ status }: Props) {
     CLOSED: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300",
   };
 
+  const labelByStatus: Record<TicketStatus, string> = {
+    OPEN: "Open",
+    IN_PROGRESS: "In Progress",
+    CLOSED: "Closed",
+  };
+
   return (
-    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-bold tracking-wide ${colorClassByStatus[status]}`}>
-      {status}
+    <span className={`ui-badge shrink-0 ${colorClassByStatus[status]}`}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {labelByStatus[status]}
     </span>
   );
 }
