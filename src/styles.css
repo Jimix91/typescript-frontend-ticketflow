@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply m-0 bg-surface-app text-slate-900 antialiased transition-colors dark:bg-surface-dark dark:text-slate-100;
+    @apply m-0 bg-slate-100 text-slate-900 antialiased transition-colors dark:bg-slate-950 dark:text-slate-100;
   }
 
   input,
@@ -32,27 +32,64 @@
   }
 
   .ui-topbar {
-    @apply rounded-2xl border border-slate-200 bg-surface-0 p-4 shadow-panel dark:border-slate-800 dark:bg-surface-dark-1;
+    @apply rounded-2xl border border-slate-200/80 bg-surface-0 p-4 shadow-panel dark:border-slate-800/80 dark:bg-surface-dark-1;
+  }
+
+  .ui-sidebar {
+    @apply ui-topbar relative overflow-hidden;
+  }
+
+  .ui-sidebar::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-brand-50/80 to-transparent dark:from-brand-900/20;
+  }
+
+  .ui-sidebar-content {
+    @apply relative z-10 flex flex-col gap-5;
   }
 
   .ui-logo-wrap {
-    @apply rounded-2xl border border-slate-200 bg-surface-1 p-4 shadow-sm dark:border-slate-700 dark:bg-surface-dark-2;
+    @apply rounded-2xl border border-slate-200 bg-surface-0 p-5 shadow-sm dark:border-slate-700 dark:bg-surface-dark-2;
   }
 
   .ui-logo {
-    @apply h-20 w-auto object-contain sm:h-24 lg:h-28;
+    @apply mx-auto h-24 w-auto object-contain sm:h-28 lg:h-32;
+  }
+
+  .ui-nav-list {
+    @apply grid gap-2;
+  }
+
+  .ui-nav-item {
+    @apply ui-btn-secondary w-full justify-start rounded-xl px-4 py-2.5 text-[0.92rem];
+  }
+
+  .ui-nav-item-active {
+    @apply border-brand-200 bg-brand-50 text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-100 dark:border-brand-700/70 dark:bg-brand-900/30 dark:text-brand-200 dark:hover:border-brand-600;
+  }
+
+  .ui-sidebar-divider {
+    @apply my-1 h-px bg-slate-200 dark:bg-slate-800;
+  }
+
+  .ui-profile-panel {
+    @apply ui-card-soft border-slate-300/70 bg-slate-50/90 dark:border-slate-700 dark:bg-slate-900/70;
   }
 
   .ui-card {
-    @apply rounded-2xl border border-slate-200 bg-surface-0 p-4 shadow-panel dark:border-slate-800 dark:bg-surface-dark-1 sm:p-5;
+    @apply rounded-2xl border border-slate-200/70 bg-surface-0 p-4 shadow-panel dark:border-slate-800/70 dark:bg-surface-dark-1 sm:p-5;
   }
 
   .ui-card-soft {
-    @apply rounded-2xl border border-slate-200 bg-surface-1 p-4 dark:border-slate-800 dark:bg-surface-dark-2;
+    @apply rounded-2xl border border-slate-200/70 bg-surface-1 p-4 dark:border-slate-800/70 dark:bg-surface-dark-2;
   }
 
   .ui-title {
-    @apply text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl;
+    @apply text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl;
+  }
+
+  .ui-page-subtitle {
+    @apply -mt-2 text-sm font-medium text-slate-500 dark:text-slate-400;
   }
 
   .ui-subtitle {
@@ -92,7 +129,7 @@
   }
 
   .ui-section-stack {
-    @apply grid gap-4 sm:gap-5;
+    @apply grid gap-5 sm:gap-6;
   }
 
   .ui-table-wrap {

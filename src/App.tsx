@@ -15,12 +15,12 @@ import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile";
 
 function App() {
-  const navButtonClass =
-    "ui-btn-secondary w-full justify-start lg:w-auto";
+  const navButtonClass = "ui-nav-item";
   const summaryChipClass =
-    "ui-chip";
+    "ui-chip inline-flex min-w-[9.5rem] items-center justify-center text-center";
   const primaryButtonClass = "ui-btn-primary";
   const secondaryButtonClass = "ui-btn-secondary";
+  const navActiveClass = "ui-nav-item ui-nav-item-active";
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authToken, setAuthTokenState] = useState<string | null>(() => localStorage.getItem("ticketflow-token"));
@@ -47,13 +47,29 @@ function App() {
     [tickets, activeTicketId],
   );
 
+  const scopedTickets = useMemo(() => {
+    if (!authUser) {
+      return [] as Ticket[];
+    }
+
+    if (authUser.role === "ADMIN") {
+      return tickets;
+    }
+
+    if (authUser.role === "AGENT") {
+      return tickets.filter((ticket) => ticket.assignedToId === authUser.id);
+    }
+
+    return tickets.filter((ticket) => ticket.createdById === authUser.id);
+  }, [tickets, authUser]);
+
   const ticketSummary = useMemo(() => {
-    const open = tickets.filter((ticket) => ticket.status === "OPEN").length;
-    const inProgress = tickets.filter((ticket) => ticket.status === "IN_PROGRESS").length;
-    const closed = tickets.filter((ticket) => ticket.status === "CLOSED").length;
+    const open = scopedTickets.filter((ticket) => ticket.status === "OPEN").length;
+    const inProgress = scopedTickets.filter((ticket) => ticket.status === "IN_PROGRESS").length;
+    const closed = scopedTickets.filter((ticket) => ticket.status === "CLOSED").length;
 
     return { open, inProgress, closed };
-  }, [tickets]);
+  }, [scopedTickets]);
 
   const loadData = useCallback(async (showLoader: boolean) => {
     try {
@@ -293,6 +309,8 @@ function App() {
     setPage("dashboard");
   };
 
+  const isDashboardActive = page === "dashboard" || page === "detail" || page === "edit" || page === "resolution";
+
   if (loading) {
     return (
       <main className="ui-shell flex items-center justify-center">
@@ -373,16 +391,16 @@ function App() {
 
   return (
     <main className="ui-shell lg:pl-[22rem]">
-      <header className="ui-topbar mb-5 lg:fixed lg:left-6 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[20rem] lg:flex-col lg:overflow-y-auto lg:p-5">
-        <div className="flex flex-col gap-5">
+      <header className="ui-sidebar mb-5 lg:fixed lg:left-6 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[20rem] lg:flex-col lg:overflow-y-auto lg:p-5">
+        <div className="ui-sidebar-content">
           <div className="flex flex-col gap-4">
             <div className="ui-logo-wrap">
               <img src={ticketflowLogo} alt="TicketFlow logo" className="ui-logo" />
             </div>
 
-            <div className="grid gap-2">
-              <button onClick={() => setPage("dashboard")} className={navButtonClass}>Dashboard</button>
-              <button onClick={() => setPage("create")} disabled={users.length === 0} className={navButtonClass}>
+            <div className="ui-nav-list">
+              <button onClick={() => setPage("dashboard")} className={isDashboardActive ? navActiveClass : navButtonClass}>Dashboard</button>
+              <button onClick={() => setPage("create")} disabled={users.length === 0} className={page === "create" ? navActiveClass : navButtonClass}>
                 Create Ticket
               </button>
               <button onClick={() => setIsDarkMode((prev) => !prev)} className={navButtonClass}>
@@ -392,25 +410,39 @@ function App() {
             </div>
           </div>
 
-          <div className="ui-card-soft flex flex-col gap-4 lg:mt-auto">
+          <div className="ui-sidebar-divider" />
+
+          <div className="ui-profile-panel flex flex-col gap-4 lg:mt-auto">
+            <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/70">
+              <button
+                onClick={() => setPage("profile")}
+                className="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white text-lg font-bold text-slate-700 shadow-sm hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-brand-600"
+                aria-label="Open profile"
+              >
+                {authUser.profileImageUrl ? (
+                  <img src={authUser.profileImageUrl} alt="Profile" className="h-full w-full object-cover" />
+                ) : (
+                  <span>{authUser.name.charAt(0).toUpperCase()}</span>
+                )}
+              </button>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{authUser.name}</p>
+                <p className="truncate text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{authUser.role ?? "User"}</p>
+              </div>
+            </div>
+
             <button
               onClick={() => setPage("profile")}
-              className="ui-btn-secondary inline-flex w-full items-center justify-start gap-3 rounded-xl"
+              className={page === "profile" ? navActiveClass : navButtonClass}
             >
-              {authUser.profileImageUrl ? (
-                <img src={authUser.profileImageUrl} alt="Profile" className="h-10 w-10 rounded-full border border-slate-300 object-cover dark:border-slate-700" />
-              ) : (
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-sm font-bold dark:border-slate-700">
-                  {authUser.name.charAt(0).toUpperCase()}
-                </span>
-              )}
-              <span>{authUser.name}</span>
+              My Profile
             </button>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={summaryChipClass}>Open: {ticketSummary.open}</span>
-              <span className={summaryChipClass}>In Progress: {ticketSummary.inProgress}</span>
-              <span className={summaryChipClass}>Closed: {ticketSummary.closed}</span>
+            <div className="flex w-full flex-col items-center gap-2">
+              <span className={summaryChipClass}>My Open: {ticketSummary.open}</span>
+              <span className={summaryChipClass}>My In Progress: {ticketSummary.inProgress}</span>
+              <span className={summaryChipClass}>My Closed: {ticketSummary.closed}</span>
             </div>
           </div>
         </div>

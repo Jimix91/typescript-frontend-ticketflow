@@ -144,7 +144,10 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
 
   return (
     <section className="ui-section-stack">
-      <h2 className="ui-title">Dashboard</h2>
+      <div className="grid gap-2">
+        <h2 className="ui-title">Dashboard</h2>
+        <p className="ui-page-subtitle">Monitor, prioritize, and move tickets with a productivity-first workflow.</p>
+      </div>
 
       <section className="ui-card grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <input
