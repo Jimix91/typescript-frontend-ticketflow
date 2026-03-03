@@ -96,7 +96,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
             <h2 className="ui-title">Ticket Detail</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Track context, updates, and resolution activity in one place.</p>
           </div>
-          <StatusBadge status={ticket.status} />
+          <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
         </div>
       </header>
 

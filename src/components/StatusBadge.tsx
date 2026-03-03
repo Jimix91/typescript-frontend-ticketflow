@@ -1,10 +1,11 @@
-import { TicketStatus } from "../types";
+import { InProgressSubStatus, TicketStatus } from "../types";
 
 type Props = {
   status: TicketStatus;
+  inProgressSubStatus?: InProgressSubStatus | null;
 };
 
-export function StatusBadge({ status }: Props) {
+export function StatusBadge({ status, inProgressSubStatus = null }: Props) {
   const colorClassByStatus: Record<TicketStatus, string> = {
     OPEN: "bg-blue-100 text-blue-700",
     IN_PROGRESS: "bg-amber-100 text-amber-700",
@@ -17,9 +18,19 @@ export function StatusBadge({ status }: Props) {
     CLOSED: "Closed",
   };
 
+  const inProgressDetailLabel: Record<InProgressSubStatus, string> = {
+    PENDING_AGENT: "Pending Agent",
+    PENDING_EMPLOYEE: "Pending Employee",
+  };
+
+  const detailLabel =
+    status === "IN_PROGRESS" && inProgressSubStatus
+      ? ` · ${inProgressDetailLabel[inProgressSubStatus]}`
+      : "";
+
   return (
     <span className={`ui-badge shrink-0 ${colorClassByStatus[status]}`}>
-      {labelByStatus[status]}
+      {labelByStatus[status]}{detailLabel}
     </span>
   );
 }

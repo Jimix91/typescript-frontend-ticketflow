@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Ticket, TicketFormValues, TicketPriority, TicketStatus, User } from "../types";
+import { InProgressSubStatus, Ticket, TicketFormValues, TicketPriority, TicketStatus, User } from "../types";
 
 type Props = {
   users: User[];
@@ -16,6 +16,9 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
   const [description, setDescription] = useState(initialTicket?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(initialTicket?.imageUrl ?? null);
   const [status, setStatus] = useState<TicketStatus>(initialTicket?.status ?? "OPEN");
+  const [inProgressSubStatus, setInProgressSubStatus] = useState<InProgressSubStatus | null>(
+    initialTicket?.inProgressSubStatus ?? null,
+  );
   const [priority, setPriority] = useState<TicketPriority>(initialTicket?.priority ?? "MEDIUM");
   const [assignedToId, setAssignedToId] = useState<number | null>(initialTicket?.assignedToId ?? null);
 
@@ -43,12 +46,17 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
     }
 
     const effectiveStatus = canEditStatus ? status : initialTicket?.status ?? "OPEN";
+    const effectiveInProgressSubStatus =
+      effectiveStatus === "IN_PROGRESS"
+        ? inProgressSubStatus ?? "PENDING_AGENT"
+        : null;
 
     await onSubmit({
       title: title.trim(),
       description: description.trim(),
       imageUrl,
       status: effectiveStatus,
+      inProgressSubStatus: effectiveInProgressSubStatus,
       priority,
       assignedToId,
     });
@@ -98,10 +106,36 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
           {canEditStatus && (
             <div className="grid gap-1.5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Status</label>
-              <select value={status} onChange={(event) => setStatus(event.target.value as TicketStatus)}>
+              <select
+                value={status}
+                onChange={(event) => {
+                  const nextStatus = event.target.value as TicketStatus;
+                  setStatus(nextStatus);
+
+                  if (nextStatus !== "IN_PROGRESS") {
+                    setInProgressSubStatus(null);
+                    return;
+                  }
+
+                  setInProgressSubStatus((prev) => prev ?? "PENDING_AGENT");
+                }}
+              >
                 <option value="OPEN">OPEN</option>
                 <option value="IN_PROGRESS">IN_PROGRESS</option>
                 <option value="CLOSED">CLOSED</option>
+              </select>
+            </div>
+          )}
+
+          {canEditStatus && status === "IN_PROGRESS" && (
+            <div className="grid gap-1.5">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">In-progress substatus</label>
+              <select
+                value={inProgressSubStatus ?? "PENDING_AGENT"}
+                onChange={(event) => setInProgressSubStatus(event.target.value as InProgressSubStatus)}
+              >
+                <option value="PENDING_AGENT">PENDING_AGENT</option>
+                <option value="PENDING_EMPLOYEE">PENDING_EMPLOYEE</option>
               </select>
             </div>
           )}

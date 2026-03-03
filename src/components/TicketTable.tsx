@@ -22,7 +22,7 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
           <article key={ticket.id} className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="mb-2 flex items-start justify-between gap-2">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{ticket.title}</h3>
-              <StatusBadge status={ticket.status} />
+              <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
             </div>
             <div className="grid gap-1.5 text-xs text-slate-600 dark:text-slate-300">
               <span>{ticket.priority} priority</span>
@@ -55,7 +55,7 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
             <tr key={ticket.id}>
               <td className="ui-td text-slate-800 dark:text-slate-200">{ticket.title}</td>
               <td className="ui-td">
-                <StatusBadge status={ticket.status} />
+                <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
               </td>
               <td className="ui-td">
                 <span

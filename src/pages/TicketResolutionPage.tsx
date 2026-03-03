@@ -1,7 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import { formatRelativeDate } from "../time";
-import { Comment, Ticket, TicketStatus, User } from "../types";
+import { Comment, InProgressSubStatus, Ticket, TicketStatus, User } from "../types";
 import { StatusBadge } from "../components/StatusBadge";
 
 type Props = {
@@ -17,12 +17,14 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
   const [commentText, setCommentText] = useState("");
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<TicketStatus>(ticket.status);
+  const [inProgressSubStatus, setInProgressSubStatus] = useState<InProgressSubStatus | null>(ticket.inProgressSubStatus);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setStatus(ticket.status);
-  }, [ticket.status]);
+    setInProgressSubStatus(ticket.inProgressSubStatus);
+  }, [ticket.status, ticket.inProgressSubStatus]);
 
   useEffect(() => {
     const loadComments = async () => {
@@ -70,6 +72,10 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
         imageUrl: commentImageUrl,
       });
       setComments((prev) => [...prev, created]);
+      const refreshed = await api.getTaskById(ticket.id);
+      onTicketUpdate(refreshed);
+      setStatus(refreshed.status);
+      setInProgressSubStatus(refreshed.inProgressSubStatus);
       setCommentText("");
       setCommentImageUrl(null);
       setError(null);
@@ -81,13 +87,19 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
   };
 
   const handleStatusChange = async () => {
-    if (status === ticket.status) {
+    const isSameStatus = status === ticket.status;
+    const isSameSubStatus = inProgressSubStatus === ticket.inProgressSubStatus;
+
+    if (isSameStatus && isSameSubStatus) {
       return;
     }
 
     try {
       setBusy(true);
-      const updated = await api.updateTask(ticket.id, { status });
+      const updated = await api.updateTask(ticket.id, {
+        status,
+        inProgressSubStatus: status === "IN_PROGRESS" ? inProgressSubStatus ?? "PENDING_AGENT" : null,
+      });
       onTicketUpdate(updated);
       setError(null);
     } catch (reason) {
@@ -106,7 +118,7 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
             <h2 className="ui-title">Ticket Resolution</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Resolve, document outcomes, and close the feedback loop with clear updates.</p>
           </div>
-          <StatusBadge status={ticket.status} />
+          <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
         </div>
       </header>
 
@@ -125,12 +137,38 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <select value={status} onChange={(event) => setStatus(event.target.value as TicketStatus)} disabled={busy}>
+            <select
+              value={status}
+              onChange={(event) => {
+                const nextStatus = event.target.value as TicketStatus;
+                setStatus(nextStatus);
+                if (nextStatus !== "IN_PROGRESS") {
+                  setInProgressSubStatus(null);
+                  return;
+                }
+                setInProgressSubStatus((prev) => prev ?? "PENDING_AGENT");
+              }}
+              disabled={busy}
+            >
               <option value="OPEN">OPEN</option>
               <option value="IN_PROGRESS">IN_PROGRESS</option>
               <option value="CLOSED">CLOSED</option>
             </select>
-            <button onClick={() => void handleStatusChange()} disabled={busy || status === ticket.status} className="ui-btn-primary">
+            {status === "IN_PROGRESS" && (
+              <select
+                value={inProgressSubStatus ?? "PENDING_AGENT"}
+                onChange={(event) => setInProgressSubStatus(event.target.value as InProgressSubStatus)}
+                disabled={busy}
+              >
+                <option value="PENDING_AGENT">PENDING_AGENT</option>
+                <option value="PENDING_EMPLOYEE">PENDING_EMPLOYEE</option>
+              </select>
+            )}
+            <button
+              onClick={() => void handleStatusChange()}
+              disabled={busy || (status === ticket.status && inProgressSubStatus === ticket.inProgressSubStatus)}
+              className="ui-btn-primary"
+            >
               Save Status
             </button>
           </div>

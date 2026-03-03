@@ -90,7 +90,12 @@ function App() {
           prev.length !== tasksResponse.length ||
           prev.some((ticket) => {
             const next = tasksResponse.find((item) => item.id === ticket.id);
-            return !next || next.updatedAt !== ticket.updatedAt || next.status !== ticket.status;
+            return (
+              !next ||
+              next.updatedAt !== ticket.updatedAt ||
+              next.status !== ticket.status ||
+              next.inProgressSubStatus !== ticket.inProgressSubStatus
+            );
           });
 
         if (!showLoader && changed) {
@@ -172,6 +177,7 @@ function App() {
         description: values.description,
         imageUrl: values.imageUrl,
         status: values.status,
+        inProgressSubStatus: values.inProgressSubStatus,
         priority: values.priority,
         assignedToId: values.assignedToId,
       });
@@ -189,6 +195,7 @@ function App() {
         description: values.description,
         imageUrl: values.imageUrl,
         status: values.status,
+        inProgressSubStatus: values.inProgressSubStatus,
         priority: values.priority,
         assignedToId: values.assignedToId,
       });
@@ -208,7 +215,10 @@ function App() {
       }
 
       setMovingTicketId(ticketId);
-      const updated = await api.updateTask(ticketId, { status });
+      const updated = await api.updateTask(ticketId, {
+        status,
+        inProgressSubStatus: status === "IN_PROGRESS" ? "PENDING_AGENT" : null,
+      });
       setTickets((prev) => prev.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
       setLiveNotice(`Ticket #${ticketId} moved to ${status}`);
     } catch (error) {

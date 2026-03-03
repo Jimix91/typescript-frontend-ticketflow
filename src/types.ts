@@ -7,6 +7,7 @@ export type User = {
 };
 
 export type TicketStatus = "OPEN" | "IN_PROGRESS" | "CLOSED";
+export type InProgressSubStatus = "PENDING_AGENT" | "PENDING_EMPLOYEE";
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH";
 
 export type Ticket = {
@@ -15,6 +16,7 @@ export type Ticket = {
   description: string;
   imageUrl?: string | null;
   status: TicketStatus;
+  inProgressSubStatus: InProgressSubStatus | null;
   priority: TicketPriority;
   createdAt: string;
   updatedAt: string;
@@ -30,6 +32,7 @@ export type CreateTaskInput = {
   imageUrl?: string | null;
   assignedToId?: number | null;
   status?: TicketStatus;
+  inProgressSubStatus?: InProgressSubStatus | null;
   priority?: TicketPriority;
 };
 
@@ -38,6 +41,7 @@ export type UpdateTaskInput = {
   description?: string | null;
   imageUrl?: string | null;
   status?: TicketStatus;
+  inProgressSubStatus?: InProgressSubStatus | null;
   priority?: TicketPriority;
   assignedToId?: number | null;
 };
@@ -62,6 +66,7 @@ export type TicketFormValues = {
   description: string;
   imageUrl?: string | null;
   status: TicketStatus;
+  inProgressSubStatus: InProgressSubStatus | null;
   priority: TicketPriority;
   assignedToId: number | null;
 };
