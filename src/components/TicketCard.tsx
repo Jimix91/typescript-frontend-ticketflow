@@ -7,10 +7,11 @@ type Props = {
   users: User[];
   onEdit: () => void;
   onDelete: () => void;
-  canManage: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 };
 
-export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props) {
+export function TicketCard({ ticket, users, onEdit, onDelete, canEdit, canDelete }: Props) {
   const createdByName =
     ticket.createdBy?.name ?? users.find((user) => user.id === ticket.createdById)?.name ?? "Unknown";
   const assignedToName =
@@ -49,20 +50,24 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props
         {ticket.status === "CLOSED" && <p><span className="font-semibold text-slate-800 dark:text-slate-200">Closed:</span> {formatRelativeDate(ticket.updatedAt)}</p>}
       </div>
 
-      {canManage && (
+      {(canEdit || canDelete) && (
         <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            onClick={onEdit}
-            className="ui-btn-secondary"
-          >
-            Edit Ticket
-          </button>
-          <button
-            onClick={onDelete}
-            className="ui-btn-danger"
-          >
-            Delete Ticket
-          </button>
+          {canEdit && (
+            <button
+              onClick={onEdit}
+              className="ui-btn-secondary"
+            >
+              Edit Ticket
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={onDelete}
+              className="ui-btn-danger"
+            >
+              Delete Ticket
+            </button>
+          )}
         </div>
       )}
     </section>

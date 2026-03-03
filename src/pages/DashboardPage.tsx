@@ -150,6 +150,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
             authUser.role === "ADMIN" ||
             (authUser.role === "EMPLOYEE" && ticket.createdById === authUser.id) ||
             (authUser.role === "AGENT" && ticket.assignedToId === authUser.id);
+          const canDelete = canManage && authUser.role !== "EMPLOYEE";
 
           const canDrag = canDragTicket(ticket);
           const assignedName = ticket.assignedTo?.name ?? users.find((user) => user.id === ticket.assignedToId)?.name ?? "Unassigned";
@@ -213,7 +214,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
             <button className="ui-btn-secondary ui-focusable px-3.5 py-2 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
             {canManage && <button className="ui-btn-secondary ui-focusable px-3.5 py-2 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
-            {canManage && <button className="ui-btn-danger ui-focusable px-3.5 py-2 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
+            {canDelete && <button className="ui-btn-danger ui-focusable px-3.5 py-2 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
           </div>
         </article>
           );

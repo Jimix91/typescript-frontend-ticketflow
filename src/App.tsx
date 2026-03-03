@@ -263,8 +263,8 @@ function App() {
     setActiveTicketId(ticketId);
 
     const shouldOpenResolution =
-      authUser?.role === "AGENT" &&
-      targetTicket?.assignedToId === authUser.id;
+      authUser?.role === "ADMIN" ||
+      (authUser?.role === "AGENT" && targetTicket?.assignedToId === authUser.id);
 
     setPage(shouldOpenResolution ? "resolution" : "detail");
   };
@@ -417,8 +417,8 @@ function App() {
   }
 
   return (
-    <main className="ui-shell ui-fade-in lg:pl-[22rem]">
-      <header className="ui-sidebar mb-5 lg:fixed lg:left-6 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[20rem] lg:flex-col lg:overflow-y-auto lg:p-5">
+    <main className="ui-shell ui-fade-in lg:grid lg:grid-cols-[20rem,1fr] lg:gap-6">
+      <header className="ui-sidebar sticky top-3 z-40 mb-5 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-full lg:self-start lg:flex-col lg:overflow-y-auto lg:p-5">
         <div className="ui-sidebar-content">
           <div className="flex flex-col gap-4">
             <div className="ui-logo-wrap">
@@ -475,6 +475,8 @@ function App() {
           </div>
         </div>
       </header>
+
+      <section className="min-w-0">
 
       {liveNotice && (
         <p className="ui-alert-success mb-4">
@@ -573,6 +575,8 @@ function App() {
           <button className={secondaryButtonClass} onClick={() => setPage("dashboard")}>Back to dashboard</button>
         </section>
       )}
+
+      </section>
 
       <ConfirmModal
         open={confirmDeleteId !== null}

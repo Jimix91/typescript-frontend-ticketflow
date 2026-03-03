@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import { TicketCard } from "../components/TicketCard";
 import { StatusBadge } from "../components/StatusBadge";
-import { formatRelativeDate } from "../time";
+import { formatDateTime, formatRelativeDate } from "../time";
 import { Comment, Ticket, User } from "../types";
 
 type Props = {
@@ -20,12 +20,15 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
   const [commentText, setCommentText] = useState("");
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
   const [savingComment, setSavingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const canManage =
     authUser.role === "ADMIN" ||
     (authUser.role === "EMPLOYEE" && ticket.createdById === authUser.id) ||
     (authUser.role === "AGENT" && ticket.assignedToId === authUser.id);
+  const canDelete = canManage && authUser.role !== "EMPLOYEE";
 
   const canComment = canManage;
 
@@ -87,6 +90,42 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
     }
   };
 
+  const handleStartEditComment = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingContent(comment.content);
+  };
+
+  const handleSaveEditComment = async (commentId: number) => {
+    if (!editingContent.trim()) {
+      return;
+    }
+
+    try {
+      const updated = await api.updateTaskComment(ticket.id, commentId, { content: editingContent.trim() });
+      setComments((prev) => prev.map((comment) => (comment.id === commentId ? updated : comment)));
+      setEditingCommentId(null);
+      setEditingContent("");
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not update comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    const confirmed = window.confirm("Are you sure you want to delete this comment?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.deleteTaskComment(ticket.id, commentId);
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not delete comment");
+    }
+  };
+
   return (
     <section className="ui-section-stack">
       <header className="ui-card relative overflow-hidden">
@@ -101,7 +140,14 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
       </header>
 
       <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} canManage={canManage} />
+        <TicketCard
+          ticket={ticket}
+          users={users}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          canEdit={canManage}
+          canDelete={canDelete}
+        />
 
         <aside className="ui-card grid gap-4 self-start">
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Ticket Snapshot</h3>
@@ -160,6 +206,9 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Comments</h3>
           <span className="ui-chip">{comments.length} total</span>
         </div>
+        <p className="mb-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+          Ticket last modification: {formatDateTime(ticket.updatedAt)}
+        </p>
         {loadingComments ? (
           <p className="text-sm text-slate-600 dark:text-slate-300">Loading comments...</p>
         ) : comments.length === 0 ? (
@@ -168,6 +217,12 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
           <div className="grid gap-3">
           {comments.map((comment) => (
             <article key={comment.id} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/50">
+              {(() => {
+                const canManageComment = authUser.role === "ADMIN" || comment.authorId === authUser.id;
+                const isEditing = editingCommentId === comment.id;
+
+                return (
+                  <>
               <div className="flex items-center justify-between gap-3">
                 <p className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[0.65rem] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
@@ -175,12 +230,50 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
                   </span>
                   <strong className="text-slate-700 dark:text-slate-200">{comment.author?.name ?? "Unknown"}</strong>
                 </p>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatRelativeDate(comment.createdAt)}</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatDateTime(comment.createdAt)}</p>
               </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
+              {isEditing ? (
+                <div className="grid gap-2">
+                  <textarea
+                    value={editingContent}
+                    onChange={(event) => setEditingContent(event.target.value)}
+                    rows={3}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className="ui-btn-primary px-3 py-1.5 text-xs" onClick={() => void handleSaveEditComment(comment.id)}>
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="ui-btn-secondary px-3 py-1.5 text-xs"
+                      onClick={() => {
+                        setEditingCommentId(null);
+                        setEditingContent("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
+              )}
               {comment.imageUrl && (
                 <img src={comment.imageUrl} alt="Comment attachment" className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
               )}
+              {canManageComment && !isEditing && (
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => handleStartEditComment(comment)}>
+                    Edit
+                  </button>
+                  <button type="button" className="ui-btn-danger px-3 py-1.5 text-xs" onClick={() => void handleDeleteComment(comment.id)}>
+                    Delete
+                  </button>
+                </div>
+              )}
+                  </>
+                );
+              })()}
             </article>
           ))}
           </div>

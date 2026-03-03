@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
-import { formatRelativeDate } from "../time";
+import { formatDateTime, formatRelativeDate } from "../time";
 import { Comment, InProgressSubStatus, Ticket, TicketStatus, User } from "../types";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -18,6 +18,8 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<TicketStatus>(ticket.status);
   const [inProgressSubStatus, setInProgressSubStatus] = useState<InProgressSubStatus | null>(ticket.inProgressSubStatus);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,11 +103,49 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
         inProgressSubStatus: status === "IN_PROGRESS" ? inProgressSubStatus ?? "PENDING_AGENT" : null,
       });
       onTicketUpdate(updated);
+      const refreshedComments = await api.getTaskComments(ticket.id);
+      setComments(refreshedComments);
       setError(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not update status");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleStartEditComment = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingContent(comment.content);
+  };
+
+  const handleSaveEditComment = async (commentId: number) => {
+    if (!editingContent.trim()) {
+      return;
+    }
+
+    try {
+      const updated = await api.updateTaskComment(ticket.id, commentId, { content: editingContent.trim() });
+      setComments((prev) => prev.map((comment) => (comment.id === commentId ? updated : comment)));
+      setEditingCommentId(null);
+      setEditingContent("");
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not update comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    const confirmed = window.confirm("Are you sure you want to delete this comment?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.deleteTaskComment(ticket.id, commentId);
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not delete comment");
     }
   };
 
@@ -229,6 +269,9 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Resolution Timeline</h3>
           <span className="ui-chip">{comments.length} total</span>
         </div>
+        <p className="mb-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+          Ticket last modification: {formatDateTime(ticket.updatedAt)}
+        </p>
         {loadingComments ? (
           <p className="text-sm text-slate-600 dark:text-slate-300">Loading comments...</p>
         ) : comments.length === 0 ? (
@@ -237,6 +280,12 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
           <div className="grid gap-3">
           {comments.map((comment) => (
             <article key={comment.id} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/50">
+              {(() => {
+                const canManageComment = authUser.role === "ADMIN" || comment.authorId === authUser.id;
+                const isEditing = editingCommentId === comment.id;
+
+                return (
+                  <>
               <div className="flex items-center justify-between gap-3">
                 <p className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[0.65rem] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
@@ -244,12 +293,50 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
                   </span>
                   <strong className="text-slate-700 dark:text-slate-200">{comment.author?.name ?? "Unknown"}</strong>
                 </p>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatRelativeDate(comment.createdAt)}</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatDateTime(comment.createdAt)}</p>
               </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
+              {isEditing ? (
+                <div className="grid gap-2">
+                  <textarea
+                    value={editingContent}
+                    onChange={(event) => setEditingContent(event.target.value)}
+                    rows={3}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className="ui-btn-primary px-3 py-1.5 text-xs" onClick={() => void handleSaveEditComment(comment.id)}>
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="ui-btn-secondary px-3 py-1.5 text-xs"
+                      onClick={() => {
+                        setEditingCommentId(null);
+                        setEditingContent("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
+              )}
               {comment.imageUrl && (
                 <img src={comment.imageUrl} alt="Comment attachment" className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
               )}
+              {canManageComment && !isEditing && (
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => handleStartEditComment(comment)}>
+                    Edit
+                  </button>
+                  <button type="button" className="ui-btn-danger px-3 py-1.5 text-xs" onClick={() => void handleDeleteComment(comment.id)}>
+                    Delete
+                  </button>
+                </div>
+              )}
+                  </>
+                );
+              })()}
             </article>
           ))}
           </div>

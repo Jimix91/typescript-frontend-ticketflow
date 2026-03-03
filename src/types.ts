@@ -61,6 +61,10 @@ export type CreateCommentInput = {
   imageUrl?: string | null;
 };
 
+export type UpdateCommentInput = {
+  content: string;
+};
+
 export type TicketFormValues = {
   title: string;
   description: string;
