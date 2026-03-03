@@ -1,18 +1,21 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { StatusBadge } from "../components/StatusBadge";
+import { formatRelativeDate } from "../time";
 import { Ticket, TicketPriority, TicketStatus, User } from "../types";
 
 type Props = {
   authUser: User;
   tickets: Ticket[];
   users: User[];
+  isSyncing?: boolean;
+  movingTicketId?: number | null;
   onView: (ticketId: number) => void;
   onEdit: (ticketId: number) => void;
   onDelete: (ticketId: number) => void;
   onMoveStatus: (ticketId: number, status: TicketStatus) => void;
 };
 
-export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDelete, onMoveStatus }: Props) {
+export function DashboardPage({ authUser, tickets, users, isSyncing = false, movingTicketId = null, onView, onEdit, onDelete, onMoveStatus }: Props) {
   const [omnibox, setOmnibox] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | TicketStatus>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<"ALL" | TicketPriority>("ALL");
@@ -99,51 +102,74 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
 
   const priorityBadgeClass = (priority: TicketPriority) => {
     if (priority === "HIGH") {
-      return "ui-priority border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300";
+      return "ui-priority bg-rose-100 text-rose-700";
     }
     if (priority === "MEDIUM") {
-      return "ui-priority border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-300";
+      return "ui-priority bg-amber-100 text-amber-700";
     }
-    return "ui-priority border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300";
+    return "ui-priority bg-emerald-100 text-emerald-700";
   };
 
   const renderColumn = (title: string, status: TicketStatus, columnTickets: Ticket[]) => (
     <div
-      className={`ui-card min-h-[420px] border-dashed ${
-        status === "OPEN"
-          ? "border-sky-200/80 bg-sky-50/40 dark:border-sky-900/50 dark:bg-sky-950/20"
-          : status === "IN_PROGRESS"
-            ? "border-amber-200/80 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20"
-            : "border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-      }`}
+      className="min-h-[620px] rounded-2xl border border-sky-300 bg-white p-4 shadow-md dark:border-slate-700 dark:bg-slate-900"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => handleDrop(event, status)}
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-200">
+      <div className="mb-2 flex items-center justify-between border-b border-sky-200 pb-2 dark:border-slate-700">
+        <h3 className={`text-sm font-semibold ${
+          status === "OPEN" ? "text-blue-700" : status === "IN_PROGRESS" ? "text-amber-700" : "text-emerald-700"
+        }`}>
           {title}
         </h3>
-        <span className="ui-chip px-2.5 py-1 text-[0.7rem]">{columnTickets.length} tickets</span>
+        <span className={`rounded-full px-2 py-1 text-xs font-medium text-white ${
+          status === "OPEN" ? "bg-blue-600" : status === "IN_PROGRESS" ? "bg-amber-500" : "bg-emerald-600"
+        }`}>
+          {columnTickets.length}
+        </span>
       </div>
-      {columnTickets.length === 0 && (
-        <div className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-6 text-center text-xs font-medium text-slate-500 dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-400">
-          No tickets in this column.
-        </div>
-      )}
-      {columnTickets.map((ticket) => (
-        (() => {
+
+      <div className="ui-scrollbar mt-3 max-h-[520px] overflow-y-auto pr-1">
+        {isSyncing && tickets.length === 0 && (
+          <div className="grid gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={`${status}-${index}`} className="ui-skeleton h-48" />
+            ))}
+          </div>
+        )}
+
+        {!isSyncing && columnTickets.length === 0 && (
+          <div className="rounded-2xl border border-slate-200 px-3 py-8 text-center text-xs font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+            No tickets in this column.
+          </div>
+        )}
+
+        {columnTickets.map((ticket) => (
+          (() => {
           const canManage =
             authUser.role === "ADMIN" ||
             (authUser.role === "EMPLOYEE" && ticket.createdById === authUser.id) ||
             (authUser.role === "AGENT" && ticket.assignedToId === authUser.id);
 
           const canDrag = canDragTicket(ticket);
+          const assignedName = ticket.assignedTo?.name ?? users.find((user) => user.id === ticket.assignedToId)?.name ?? "Unassigned";
+          const createdName = ticket.createdBy?.name ?? users.find((user) => user.id === ticket.createdById)?.name ?? "Unknown";
+          const overdueDays = Math.floor((Date.now() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+          const isOverdue = ticket.status !== "CLOSED" && overdueDays >= 7;
 
           return (
         <article
           key={ticket.id}
-          className={`ui-kanban-card mb-3 flex min-h-[232px] flex-col gap-3 rounded-xl border border-slate-200 bg-surface-0 p-3.5 shadow-sm dark:border-slate-700 dark:bg-surface-dark-1 ${
+          className={`ui-kanban-card ui-fade-in mb-3 flex min-h-[248px] flex-col gap-4 p-[18px] ${
+            ticket.status === "OPEN"
+              ? "bg-blue-100 border-blue-300 dark:bg-slate-800/70 dark:border-blue-900/60"
+              : ticket.status === "IN_PROGRESS"
+                ? "bg-amber-100 border-amber-300 dark:bg-slate-800/70 dark:border-amber-900/60"
+                : "bg-emerald-100 border-emerald-300 dark:bg-slate-800/70 dark:border-emerald-900/60"
+          } ${
             canDrag ? "ui-draggable" : "cursor-default"
+          } ${
+            movingTicketId === ticket.id ? "scale-[0.99] opacity-80" : ""
           }`}
           draggable={canDrag}
           onDragStart={(event) => {
@@ -156,7 +182,7 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           }}
         >
           <div className="flex items-start justify-between gap-2">
-            <strong className="min-w-0 flex-1 break-words text-sm font-bold leading-5 text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+            <strong className="min-w-0 flex-1 break-words text-base font-semibold leading-6 text-slate-900 dark:text-slate-100">{ticket.title}</strong>
             <span className="shrink-0">
               <StatusBadge status={ticket.status} />
             </span>
@@ -164,40 +190,78 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
 
           <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{ticket.description}</p>
 
-          <div className="grid gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-            <small>
+          <div className="grid gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <small className="flex items-center gap-2">
               <span className={priorityBadgeClass(ticket.priority)}>
-                <span className="ui-priority-dot bg-current" />
                 Priority {ticket.priority}
               </span>
+              {isOverdue && <span className="ui-overdue">Overdue {overdueDays}d</span>}
             </small>
-            <small>Created: {new Date(ticket.createdAt).toLocaleDateString()}</small>
+            <small>Created: {formatRelativeDate(ticket.createdAt)} · by {createdName}</small>
             {ticket.status === "CLOSED" && (
-              <small>Closed: {new Date(ticket.updatedAt).toLocaleDateString()}</small>
+              <small>Closed: {formatRelativeDate(ticket.updatedAt)}</small>
             )}
-            {canDrag && <small className="text-xs font-medium text-brand-600 dark:text-brand-300">Drag to move</small>}
+            <small className="inline-flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[0.62rem] font-bold text-white dark:bg-slate-100 dark:text-slate-900">
+                {assignedName.charAt(0).toUpperCase()}
+              </span>
+              Assigned to {assignedName}
+            </small>
+            {canDrag && <small className="text-xs font-medium text-indigo-600 dark:text-indigo-300">Drag to move</small>}
           </div>
 
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
-            <button className="ui-btn-secondary ui-focusable px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
-            {canManage && <button className="ui-btn-secondary ui-focusable px-3 py-1.5 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
-            {canManage && <button className="ui-btn-danger ui-focusable px-3 py-1.5 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
+            <button className="ui-btn-secondary ui-focusable px-3.5 py-2 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
+            {canManage && <button className="ui-btn-secondary ui-focusable px-3.5 py-2 text-xs" onClick={() => onEdit(ticket.id)}>Edit</button>}
+            {canManage && <button className="ui-btn-danger ui-focusable px-3.5 py-2 text-xs" onClick={() => onDelete(ticket.id)}>Delete</button>}
           </div>
         </article>
           );
         })()
-      ))}
+        ))}
+      </div>
     </div>
   );
 
+  const unresolvedCount = filteredTickets.filter((ticket) => ticket.status !== "CLOSED").length;
+  const overdueCount = filteredTickets.filter((ticket) => {
+    if (ticket.status === "CLOSED") {
+      return false;
+    }
+
+    const ageDays = Math.floor((Date.now() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+    return ageDays >= 7;
+  }).length;
+
   return (
-    <section className="ui-section-stack">
+    <section className="ui-section-stack ui-fade-in">
       <div className="grid gap-2">
         <h2 className="ui-title">Dashboard</h2>
         <p className="ui-page-subtitle">Monitor, prioritize, and move tickets with a productivity-first workflow.</p>
       </div>
 
-      <section className="ui-card grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
+          <p className="mt-1 text-3xl font-bold tracking-tight text-blue-600">{openTickets.length}</p>
+        </article>
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
+          <p className="mt-1 text-3xl font-bold tracking-tight text-amber-600">{inProgressTickets.length}</p>
+        </article>
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Closed</p>
+          <p className="mt-1 text-3xl font-bold tracking-tight text-emerald-600">{closedTickets.length}</p>
+        </article>
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+          <p className="text-sm text-slate-500 dark:text-slate-400">SLA Watch</p>
+          <p className="mt-1 text-3xl font-bold tracking-tight text-rose-600">{overdueCount}</p>
+          <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{unresolvedCount} unresolved</p>
+        </article>
+      </section>
+
+      <section className="rounded-2xl border border-sky-300 bg-white p-6 shadow-md dark:border-slate-700 dark:bg-slate-900">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <input
           value={omnibox}
           onChange={(event) => setOmnibox(event.target.value)}
@@ -267,11 +331,12 @@ export function DashboardPage({ authUser, tickets, users, onView, onEdit, onDele
           Closed to
           <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
         </label>
+        </div>
       </section>
 
-      <p className="ui-alert-info">{dragGuidance}</p>
+      <p className="ui-alert-info dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200">{dragGuidance}</p>
 
-      <section className="grid grid-cols-1 gap-4 2xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 2xl:grid-cols-3">
         {renderColumn("Open", "OPEN", openTickets)}
         {renderColumn("In Progress", "IN_PROGRESS", inProgressTickets)}
         {renderColumn("Closed", "CLOSED", closedTickets)}

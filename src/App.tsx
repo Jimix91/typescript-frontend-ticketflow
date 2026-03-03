@@ -17,7 +17,7 @@ type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile
 function App() {
   const navButtonClass = "ui-nav-item";
   const summaryChipClass =
-    "ui-chip inline-flex min-w-[9.5rem] items-center justify-center text-center";
+    "inline-flex min-w-[9.5rem] items-center justify-center rounded-full bg-indigo-500/80 px-3 py-1.5 text-center text-xs font-semibold text-indigo-50";
   const primaryButtonClass = "ui-btn-primary";
   const secondaryButtonClass = "ui-btn-secondary";
   const navActiveClass = "ui-nav-item ui-nav-item-active";
@@ -32,6 +32,8 @@ function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [movingTicketId, setMovingTicketId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [page, setPage] = useState<Page>("dashboard");
@@ -78,6 +80,8 @@ function App() {
       }
       if (showLoader) {
         setLoading(true);
+      } else {
+        setIsSyncing(true);
       }
       const [usersResponse, tasksResponse] = await Promise.all([api.getUsers(), api.getTasks()]);
       setUsers(usersResponse);
@@ -101,6 +105,8 @@ function App() {
     } finally {
       if (showLoader) {
         setLoading(false);
+      } else {
+        setIsSyncing(false);
       }
     }
   }, [authToken]);
@@ -201,11 +207,14 @@ function App() {
         return;
       }
 
+      setMovingTicketId(ticketId);
       const updated = await api.updateTask(ticketId, { status });
       setTickets((prev) => prev.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
       setLiveNotice(`Ticket #${ticketId} moved to ${status}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not update ticket status");
+    } finally {
+      setMovingTicketId(null);
     }
   };
 
@@ -314,9 +323,17 @@ function App() {
   if (loading) {
     return (
       <main className="ui-shell flex items-center justify-center">
-        <p className="ui-card text-sm font-medium text-slate-700 dark:text-slate-200">
-          Loading TicketFlow...
-        </p>
+        <section className="grid w-full max-w-6xl grid-cols-1 gap-5 lg:grid-cols-[20rem,1fr]">
+          <div className="ui-skeleton h-[70vh]" />
+          <div className="grid gap-5">
+            <div className="ui-skeleton h-24" />
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="ui-skeleton h-[60vh]" />
+              <div className="ui-skeleton h-[60vh]" />
+              <div className="ui-skeleton h-[60vh]" />
+            </div>
+          </div>
+        </section>
       </main>
     );
   }
@@ -390,7 +407,7 @@ function App() {
   }
 
   return (
-    <main className="ui-shell lg:pl-[22rem]">
+    <main className="ui-shell ui-fade-in lg:pl-[22rem]">
       <header className="ui-sidebar mb-5 lg:fixed lg:left-6 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[20rem] lg:flex-col lg:overflow-y-auto lg:p-5">
         <div className="ui-sidebar-content">
           <div className="flex flex-col gap-4">
@@ -399,24 +416,25 @@ function App() {
             </div>
 
             <div className="ui-nav-list">
-              <button onClick={() => setPage("dashboard")} className={isDashboardActive ? navActiveClass : navButtonClass}>Dashboard</button>
-              <button onClick={() => setPage("create")} disabled={users.length === 0} className={page === "create" ? navActiveClass : navButtonClass}>
-                Create Ticket
+              <button onClick={() => setPage("dashboard")} className={isDashboardActive ? navActiveClass : navButtonClass}><span>◫</span> Dashboard</button>
+              <button onClick={() => setPage("create")} disabled={users.length === 0} className="flex w-full items-center gap-3 rounded-xl bg-indigo-600 px-4 py-2 text-left text-white transition-all duration-200 ease-in-out hover:bg-indigo-700 disabled:opacity-50">
+                <span>＋</span> Create Ticket
               </button>
               <button onClick={() => setIsDarkMode((prev) => !prev)} className={navButtonClass}>
+                <span>{isDarkMode ? "☼" : "◐"}</span>
                 {isDarkMode ? "Light Mode" : "Dark Mode"}
               </button>
-              <button onClick={handleLogout} className={navButtonClass}>Log out</button>
+              <button onClick={handleLogout} className={navButtonClass}><span>↩</span> Log out</button>
             </div>
           </div>
 
           <div className="ui-sidebar-divider" />
 
           <div className="ui-profile-panel flex flex-col gap-4 lg:mt-auto">
-            <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/70">
+            <div className="flex items-center gap-4 rounded-xl border border-slate-700 bg-slate-900/70 p-3">
               <button
                 onClick={() => setPage("profile")}
-                className="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white text-lg font-bold text-slate-700 shadow-sm hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-brand-600"
+                className="inline-flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 text-lg font-bold text-slate-100 shadow-sm hover:border-indigo-400"
                 aria-label="Open profile"
               >
                 {authUser.profileImageUrl ? (
@@ -427,8 +445,8 @@ function App() {
               </button>
 
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{authUser.name}</p>
-                <p className="truncate text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{authUser.role ?? "User"}</p>
+                <p className="truncate text-sm font-bold text-slate-100">{authUser.name}</p>
+                <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">{authUser.role ?? "User"}</p>
               </div>
             </div>
 
@@ -436,7 +454,7 @@ function App() {
               onClick={() => setPage("profile")}
               className={page === "profile" ? navActiveClass : navButtonClass}
             >
-              My Profile
+              <span>☺</span> My Profile
             </button>
 
             <div className="flex w-full flex-col items-center gap-2">
@@ -470,6 +488,8 @@ function App() {
           authUser={authUser}
           tickets={tickets}
           users={users}
+          isSyncing={isSyncing}
+          movingTicketId={movingTicketId}
           onView={(ticketId) => void openTicketDetail(ticketId)}
           onEdit={(ticketId) => void openTicketEdit(ticketId)}
           onDelete={(ticketId) => setConfirmDeleteId(ticketId)}

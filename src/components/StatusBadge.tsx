@@ -6,9 +6,9 @@ type Props = {
 
 export function StatusBadge({ status }: Props) {
   const colorClassByStatus: Record<TicketStatus, string> = {
-    OPEN: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800/60 dark:bg-sky-900/30 dark:text-sky-300",
-    IN_PROGRESS: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-300",
-    CLOSED: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300",
+    OPEN: "bg-blue-100 text-blue-700",
+    IN_PROGRESS: "bg-amber-100 text-amber-700",
+    CLOSED: "bg-emerald-100 text-emerald-700",
   };
 
   const labelByStatus: Record<TicketStatus, string> = {
@@ -19,7 +19,6 @@ export function StatusBadge({ status }: Props) {
 
   return (
     <span className={`ui-badge shrink-0 ${colorClassByStatus[status]}`}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {labelByStatus[status]}
     </span>
   );

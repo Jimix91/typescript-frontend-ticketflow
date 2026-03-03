@@ -8,13 +8,13 @@
   }
 
   body {
-    @apply m-0 bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 text-slate-900 antialiased transition-colors dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100;
+    @apply m-0 min-h-screen bg-sky-200 text-slate-900 antialiased transition-all duration-200 ease-in-out dark:bg-slate-950 dark:text-slate-100;
   }
 
   input,
   textarea,
   select {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-900;
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-indigo-500;
   }
 
   input,
@@ -23,7 +23,7 @@
   }
 
   button {
-    @apply transition duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   textarea {
@@ -33,20 +33,25 @@
 
 @layer components {
   .ui-shell {
-    @apply mx-auto min-h-screen w-full max-w-[1600px] px-3 py-4 xs:px-4 sm:px-6 lg:px-8;
+    @apply mx-auto min-h-screen w-full max-w-[1680px] px-3 py-4 xs:px-4 sm:px-6 lg:px-8;
   }
 
   .ui-topbar {
-    @apply rounded-2xl border border-slate-200/80 bg-surface-0 p-4 shadow-panel dark:border-slate-800/80 dark:bg-surface-dark-1;
+    @apply rounded-2xl border border-slate-200/80 bg-surface-0 p-5 shadow-panel transition-all duration-200 dark:border-slate-800/80 dark:bg-surface-dark-1;
   }
 
   .ui-sidebar {
-    @apply ui-topbar relative overflow-hidden;
+    @apply relative overflow-hidden rounded-3xl border border-slate-700/80 bg-slate-800 p-5 text-slate-100 shadow-sm;
   }
 
   .ui-sidebar::before {
     content: "";
-    @apply pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-brand-50/80 to-transparent dark:from-brand-900/20;
+    @apply pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-indigo-500/20 to-transparent;
+  }
+
+  .ui-sidebar::after {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-900/40 to-transparent;
   }
 
   .ui-sidebar-content {
@@ -54,7 +59,7 @@
   }
 
   .ui-logo-wrap {
-    @apply rounded-2xl border border-slate-200 bg-surface-0 p-5 shadow-sm dark:border-slate-700 dark:bg-surface-dark-2;
+    @apply rounded-2xl border border-slate-300 bg-white p-5 shadow-sm dark:border-slate-300 dark:bg-white;
   }
 
   .ui-logo {
@@ -66,23 +71,23 @@
   }
 
   .ui-nav-item {
-    @apply ui-btn-secondary w-full justify-start rounded-xl px-4 py-2.5 text-[0.92rem];
+    @apply flex items-center gap-3 rounded-xl px-4 py-2 text-[0.92rem] font-medium text-slate-100 transition-all duration-200 ease-in-out hover:bg-slate-700;
   }
 
   .ui-nav-item-active {
-    @apply border-brand-200 bg-brand-50 text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-100 dark:border-brand-700/70 dark:bg-brand-900/30 dark:text-brand-200 dark:hover:border-brand-600;
+    @apply bg-indigo-600 text-white hover:bg-indigo-600;
   }
 
   .ui-sidebar-divider {
-    @apply my-1 h-px bg-slate-200 dark:bg-slate-800;
+    @apply my-1 h-px bg-slate-600/60;
   }
 
   .ui-profile-panel {
-    @apply ui-card-soft border-slate-300/70 bg-slate-50/90 dark:border-slate-700 dark:bg-slate-900/70;
+    @apply rounded-2xl border border-slate-600/70 bg-slate-700/50 p-4;
   }
 
   .ui-card {
-    @apply rounded-2xl border border-slate-200/70 bg-surface-0 p-4 shadow-panel transition-colors duration-200 dark:border-slate-800/70 dark:bg-surface-dark-1 sm:p-5;
+    @apply rounded-2xl border border-slate-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-800 dark:bg-surface-dark-1 sm:p-6;
   }
 
   .ui-card-soft {
@@ -90,11 +95,11 @@
   }
 
   .ui-title {
-    @apply text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl;
+    @apply text-3xl font-extrabold leading-tight tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl;
   }
 
   .ui-page-subtitle {
-    @apply -mt-2 text-sm font-medium text-slate-500 dark:text-slate-400;
+    @apply -mt-1 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400;
   }
 
   .ui-subtitle {
@@ -102,11 +107,11 @@
   }
 
   .ui-btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-brand-300 active:translate-y-px dark:focus:ring-brand-700;
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 active:translate-y-px dark:focus:ring-indigo-500;
   }
 
   .ui-btn-primary {
-    @apply ui-btn bg-brand-600 text-white shadow-sm hover:bg-brand-500;
+    @apply ui-btn bg-indigo-600 text-white shadow-sm hover:bg-indigo-700;
   }
 
   .ui-btn-secondary {
@@ -118,15 +123,15 @@
   }
 
   .ui-chip {
-    @apply rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-surface-dark-1 dark:text-slate-200;
+    @apply rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white;
   }
 
   .ui-badge {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
   }
 
   .ui-priority {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
   }
 
   .ui-priority-dot {
@@ -146,7 +151,7 @@
   }
 
   .ui-section-stack {
-    @apply grid gap-5 sm:gap-6;
+    @apply grid gap-6 sm:gap-7;
   }
 
   .ui-table-wrap {
@@ -154,11 +159,11 @@
   }
 
   .ui-kanban-card {
-    @apply transition duration-150 ease-out;
+    @apply cursor-pointer rounded-2xl border border-slate-300 bg-white p-4 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl dark:border-slate-700 dark:bg-slate-900;
   }
 
   .ui-draggable {
-    @apply cursor-grab hover:-translate-y-0.5 hover:shadow-elevated active:cursor-grabbing;
+    @apply cursor-grab active:cursor-grabbing;
   }
 
   .ui-focusable {
@@ -181,5 +186,62 @@
 
   .ui-td {
     @apply border-b border-slate-100 px-3 py-3 text-sm text-slate-700 dark:border-slate-800/70 dark:text-slate-300;
+  }
+
+  .ui-fade-in {
+    animation: uiFadeIn 260ms ease-out both;
+  }
+
+  .ui-skeleton {
+    @apply relative overflow-hidden rounded-2xl bg-slate-200/80 dark:bg-slate-800/80;
+  }
+
+  .ui-skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent dark:via-slate-600/40;
+    animation: uiShimmer 1.4s infinite;
+  }
+
+  .ui-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.7) transparent;
+  }
+
+  .ui-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .ui-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ui-scrollbar::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300;
+  }
+
+  .ui-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+
+  .ui-overdue {
+    @apply inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-[0.7rem] font-semibold text-rose-700;
+  }
+}
+
+@keyframes uiFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes uiShimmer {
+  100% {
+    transform: translateX(100%);
   }
 }

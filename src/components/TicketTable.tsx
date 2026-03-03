@@ -1,4 +1,5 @@
 import { Ticket } from "../types";
+import { formatRelativeDate } from "../time";
 import { StatusBadge } from "./StatusBadge";
 
 type Props = {
@@ -25,8 +26,8 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
             </div>
             <div className="grid gap-1.5 text-xs text-slate-600 dark:text-slate-300">
               <span>{ticket.priority} priority</span>
-              <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-              <span>Closed: {ticket.status === "CLOSED" ? new Date(ticket.updatedAt).toLocaleDateString() : "-"}</span>
+              <span>Created: {formatRelativeDate(ticket.createdAt)}</span>
+              <span>Closed: {ticket.status === "CLOSED" ? formatRelativeDate(ticket.updatedAt) : "-"}</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>
@@ -60,18 +61,17 @@ export function TicketTable({ tickets, onView, onEdit, onDelete }: Props) {
                 <span
                   className={
                     ticket.priority === "HIGH"
-                      ? "ui-priority border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300"
+                      ? "ui-priority bg-rose-100 text-rose-700"
                       : ticket.priority === "MEDIUM"
-                        ? "ui-priority border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-300"
-                        : "ui-priority border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300"
+                        ? "ui-priority bg-amber-100 text-amber-700"
+                        : "ui-priority bg-emerald-100 text-emerald-700"
                   }
                 >
-                  <span className="ui-priority-dot bg-current" />
                   {ticket.priority}
                 </span>
               </td>
-              <td className="ui-td">{new Date(ticket.createdAt).toLocaleDateString()}</td>
-              <td className="ui-td">{ticket.status === "CLOSED" ? new Date(ticket.updatedAt).toLocaleDateString() : "-"}</td>
+              <td className="ui-td">{formatRelativeDate(ticket.createdAt)}</td>
+              <td className="ui-td">{ticket.status === "CLOSED" ? formatRelativeDate(ticket.updatedAt) : "-"}</td>
               <td className="ui-td">
                 <div className="flex flex-wrap gap-2">
                   <button className="ui-btn-secondary px-3 py-1.5 text-xs" onClick={() => onView(ticket.id)}>Detail</button>

@@ -1,4 +1,5 @@
 import { Ticket, User } from "../types";
+import { formatRelativeDate } from "../time";
 import { StatusBadge } from "./StatusBadge";
 
 type Props = {
@@ -19,34 +20,33 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canManage }: Props
 
   const priorityBadgeClass =
     ticket.priority === "HIGH"
-      ? "ui-priority border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-300"
+      ? "ui-priority bg-rose-100 text-rose-700"
       : ticket.priority === "MEDIUM"
-        ? "ui-priority border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-900/30 dark:text-amber-300"
-        : "ui-priority border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-300";
+        ? "ui-priority bg-amber-100 text-amber-700"
+        : "ui-priority bg-emerald-100 text-emerald-700";
 
   return (
     <section className="ui-card">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{ticket.title}</h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{ticket.title}</h2>
         <StatusBadge status={ticket.status} />
       </div>
 
-      <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">{ticket.description}</p>
+      <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-600 dark:text-slate-300">{ticket.description}</p>
       {ticket.imageUrl && (
         <img src={ticket.imageUrl} alt="Ticket attachment" className="mb-4 w-full max-w-md rounded-xl border border-slate-200 object-cover dark:border-slate-800" />
       )}
 
-      <div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
+      <div className="grid gap-2 text-xs text-slate-400 dark:text-slate-400 sm:grid-cols-2">
         <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created by:</span> {createdByName}</p>
         <p><span className="font-semibold text-slate-800 dark:text-slate-200">Assigned to:</span> {assignedToName}</p>
         <p>
           <span className={priorityBadgeClass}>
-            <span className="ui-priority-dot bg-current" />
             Priority {ticket.priority}
           </span>
         </p>
-        <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created at:</span> {new Date(ticket.createdAt).toLocaleDateString()}</p>
-        {ticket.status === "CLOSED" && <p><span className="font-semibold text-slate-800 dark:text-slate-200">Closed at:</span> {new Date(ticket.updatedAt).toLocaleDateString()}</p>}
+        <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created:</span> {formatRelativeDate(ticket.createdAt)}</p>
+        {ticket.status === "CLOSED" && <p><span className="font-semibold text-slate-800 dark:text-slate-200">Closed:</span> {formatRelativeDate(ticket.updatedAt)}</p>}
       </div>
 
       {canManage && (

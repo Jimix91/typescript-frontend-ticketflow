@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../api";
+import { formatRelativeDate } from "../time";
 import { Ticket, TicketStatus, User } from "../types";
 
 type Props = {
@@ -33,6 +34,12 @@ const statusTone: Record<TicketStatus, string> = {
   OPEN: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300",
   IN_PROGRESS: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300",
   CLOSED: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
+};
+
+const ticketRowTone: Record<TicketStatus, string> = {
+  OPEN: "border-sky-200/90 bg-sky-50/90 dark:border-sky-900/60 dark:bg-sky-950/25",
+  IN_PROGRESS: "border-amber-200/90 bg-amber-50/90 dark:border-amber-900/60 dark:bg-amber-950/25",
+  CLOSED: "border-emerald-200/90 bg-emerald-50/90 dark:border-emerald-900/60 dark:bg-emerald-950/25",
 };
 
 export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Props) {
@@ -106,7 +113,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
         {items.map((ticket) => (
           <li
             key={ticket.id}
-            className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-950/40"
+            className={`rounded-2xl border p-4 ${ticketRowTone[ticket.status]}`}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
@@ -115,8 +122,8 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
               </span>
             </div>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
-              <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-              {ticket.status === "CLOSED" && <span>Closed: {new Date(ticket.updatedAt).toLocaleDateString()}</span>}
+              <span>Created: {formatRelativeDate(ticket.createdAt)}</span>
+              {ticket.status === "CLOSED" && <span>Closed: {formatRelativeDate(ticket.updatedAt)}</span>}
               {mode === "assigned" && ticket.assignedToId && <span>Ticket #{ticket.id}</span>}
             </div>
           </li>

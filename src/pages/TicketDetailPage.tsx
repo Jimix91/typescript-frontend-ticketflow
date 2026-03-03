@@ -1,6 +1,8 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { api } from "../api";
 import { TicketCard } from "../components/TicketCard";
+import { StatusBadge } from "../components/StatusBadge";
+import { formatRelativeDate } from "../time";
 import { Comment, Ticket, User } from "../types";
 
 type Props = {
@@ -87,12 +89,43 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
 
   return (
     <section className="ui-section-stack">
-      <h2 className="ui-title">Ticket Detail</h2>
-      <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} canManage={canManage} />
+      <header className="ui-card relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sky-100/70 to-transparent dark:from-slate-800/40" />
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="ui-title">Ticket Detail</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Track context, updates, and resolution activity in one place.</p>
+          </div>
+          <StatusBadge status={ticket.status} />
+        </div>
+      </header>
+
+      <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <TicketCard ticket={ticket} users={users} onEdit={onEdit} onDelete={onDelete} canManage={canManage} />
+
+        <aside className="ui-card grid gap-4 self-start">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Ticket Snapshot</h3>
+          <div className="grid gap-3 text-sm">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Created</p>
+              <p className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{formatRelativeDate(ticket.createdAt)}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Last update</p>
+              <p className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{formatRelativeDate(ticket.updatedAt)}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Activity</p>
+              <p className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{comments.length} comment{comments.length === 1 ? "" : "s"}</p>
+            </div>
+          </div>
+        </aside>
+      </section>
 
       {canComment && (
         <section className="ui-card">
-          <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Add Comment</h3>
+          <h3 className="mb-1 text-lg font-bold text-slate-900 dark:text-slate-100">Add Comment</h3>
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">Share progress, blockers, or attach proof to keep the timeline clear.</p>
           <form onSubmit={(event) => void handleAddComment(event)} className="grid gap-3">
             <textarea
               value={commentText}
@@ -123,7 +156,10 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
       )}
 
       <section className="ui-card">
-        <h3 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Comments</h3>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Comments</h3>
+          <span className="ui-chip">{comments.length} total</span>
+        </div>
         {loadingComments ? (
           <p className="text-sm text-slate-600 dark:text-slate-300">Loading comments...</p>
         ) : comments.length === 0 ? (
@@ -131,10 +167,16 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
         ) : (
           <div className="grid gap-3">
           {comments.map((comment) => (
-            <article key={comment.id} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                <strong>{comment.author?.name ?? "Unknown"}</strong> · {new Date(comment.createdAt).toLocaleString()}
-              </p>
+            <article key={comment.id} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950/50">
+              <div className="flex items-center justify-between gap-3">
+                <p className="inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[0.65rem] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                    {(comment.author?.name ?? "U").charAt(0).toUpperCase()}
+                  </span>
+                  <strong className="text-slate-700 dark:text-slate-200">{comment.author?.name ?? "Unknown"}</strong>
+                </p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatRelativeDate(comment.createdAt)}</p>
+              </div>
               <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
               {comment.imageUrl && (
                 <img src={comment.imageUrl} alt="Comment attachment" className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
@@ -147,7 +189,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
 
       {error && <p className="ui-alert-error">{error}</p>}
 
-      <div>
+      <div className="pt-1">
         <button onClick={onBack} className="ui-btn-secondary">Back to Dashboard</button>
       </div>
     </section>
