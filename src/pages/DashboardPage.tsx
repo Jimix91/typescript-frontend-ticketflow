@@ -24,6 +24,25 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  const resetFilters = () => {
+    setOmnibox("");
+    setStatusFilter("ALL");
+    setPriorityFilter("ALL");
+    setAssignedToFilter("ALL");
+    setCreatedByFilter("ALL");
+    setFromDate("");
+    setToDate("");
+  };
+
+  const hasActiveFilters =
+    omnibox.trim().length > 0 ||
+    statusFilter !== "ALL" ||
+    priorityFilter !== "ALL" ||
+    assignedToFilter !== "ALL" ||
+    createdByFilter !== "ALL" ||
+    fromDate !== "" ||
+    toDate !== "";
+
   const filteredTickets = useMemo(() => {
     const term = omnibox.trim().toLowerCase();
 
@@ -332,6 +351,17 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
           Closed to
           <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
         </label>
+
+        <div className="flex items-end justify-end">
+          <button
+            type="button"
+            className="ui-btn-secondary ui-focusable px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={resetFilters}
+            disabled={!hasActiveFilters}
+          >
+            Clear filters
+          </button>
+        </div>
         </div>
       </section>
 
