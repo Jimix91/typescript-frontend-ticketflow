@@ -51,6 +51,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
         ticket.title,
         ticket.description,
         String(ticket.id),
+        ticket.ticketCode ?? "",
         ticket.createdBy?.name ?? "",
         ticket.assignedTo?.name ?? "",
       ]
@@ -87,9 +88,39 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
     });
   }, [tickets, omnibox, statusFilter, priorityFilter, assignedToFilter, createdByFilter, fromDate, toDate]);
 
-  const openTickets = filteredTickets.filter((ticket) => ticket.status === "OPEN");
-  const inProgressTickets = filteredTickets.filter((ticket) => ticket.status === "IN_PROGRESS");
-  const closedTickets = filteredTickets.filter((ticket) => ticket.status === "CLOSED");
+  const priorityRank: Record<TicketPriority, number> = {
+    HIGH: 0,
+    MEDIUM: 1,
+    LOW: 2,
+  };
+
+  const sortByPriority = (statusTickets: Ticket[]) => {
+    return [...statusTickets].sort((left, right) => priorityRank[left.priority] - priorityRank[right.priority]);
+  };
+
+  const openTickets = sortByPriority(filteredTickets.filter((ticket) => ticket.status === "OPEN"));
+  const inProgressTickets = sortByPriority(filteredTickets.filter((ticket) => ticket.status === "IN_PROGRESS"));
+  const closedTickets = sortByPriority(filteredTickets.filter((ticket) => ticket.status === "CLOSED"));
+
+  const getPriorityBreakdown = (statusTickets: Ticket[]) => {
+    return statusTickets.reduce(
+      (acc, ticket) => {
+        if (ticket.priority === "HIGH") {
+          acc.high += 1;
+        } else if (ticket.priority === "MEDIUM") {
+          acc.medium += 1;
+        } else {
+          acc.low += 1;
+        }
+
+        return acc;
+      },
+      { high: 0, medium: 0, low: 0 },
+    );
+  };
+
+  const openPriorityBreakdown = getPriorityBreakdown(openTickets);
+  const inProgressPriorityBreakdown = getPriorityBreakdown(inProgressTickets);
 
   const dragGuidance =
     authUser.role === "ADMIN"
@@ -202,7 +233,10 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
           }}
         >
           <div className="grid gap-2">
-            <strong className="break-words text-base font-semibold leading-6 text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+            <strong className="break-words text-base font-semibold leading-6 text-slate-900 dark:text-slate-100">
+              {ticket.title}
+              <span className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-400">#{ticket.ticketCode ?? ticket.id}</span>
+            </strong>
             <div className="flex justify-start">
               <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
             </div>
@@ -264,10 +298,16 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
         <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-blue-600">{openTickets.length}</p>
+          <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+            High {openPriorityBreakdown.high} · Medium {openPriorityBreakdown.medium} · Low {openPriorityBreakdown.low}
+          </p>
         </article>
         <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-amber-600">{inProgressTickets.length}</p>
+          <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+            High {inProgressPriorityBreakdown.high} · Medium {inProgressPriorityBreakdown.medium} · Low {inProgressPriorityBreakdown.low}
+          </p>
         </article>
         <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">Closed</p>

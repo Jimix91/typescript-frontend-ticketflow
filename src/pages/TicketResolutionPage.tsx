@@ -164,13 +164,17 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
 
       <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <section className="ui-card">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{ticket.title}</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            {ticket.title}
+            <span className="ml-2 text-sm font-semibold text-slate-500 dark:text-slate-400">#{ticket.ticketCode ?? ticket.id}</span>
+          </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{ticket.description}</p>
           {ticket.imageUrl && (
             <img src={ticket.imageUrl} alt="Incident attachment" className="mt-4 w-full max-w-md rounded-xl border border-slate-200 object-cover dark:border-slate-800" />
           )}
 
           <div className="mt-4 grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
+            <p><span className="font-semibold text-slate-800 dark:text-slate-200">Ticket code:</span> #{ticket.ticketCode ?? ticket.id}</p>
             <p><span className="font-semibold text-slate-800 dark:text-slate-200">Assigned agent:</span> {ticket.assignedTo?.name ?? authUser.name}</p>
             <p><span className="font-semibold text-slate-800 dark:text-slate-200">Created:</span> {formatRelativeDate(ticket.createdAt)}</p>
             {ticket.status === "CLOSED" && <p><span className="font-semibold text-slate-800 dark:text-slate-200">Closed:</span> {formatRelativeDate(ticket.updatedAt)}</p>}

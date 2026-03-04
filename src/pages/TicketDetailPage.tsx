@@ -132,7 +132,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sky-100/70 to-transparent dark:from-slate-800/40" />
         <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="ui-title">Ticket Detail</h2>
+            <h2 className="ui-title">Ticket Detail #{ticket.ticketCode ?? ticket.id}</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Track context, updates, and resolution activity in one place.</p>
           </div>
           <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />

@@ -29,7 +29,10 @@ export function TicketCard({ ticket, users, onEdit, onDelete, canEdit, canDelete
   return (
     <section className="ui-card">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{ticket.title}</h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          {ticket.title}
+          <span className="ml-2 text-sm font-semibold text-slate-500 dark:text-slate-400">#{ticket.ticketCode ?? ticket.id}</span>
+        </h2>
         <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
       </div>
 

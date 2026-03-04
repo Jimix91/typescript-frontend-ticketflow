@@ -116,7 +116,10 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
             className={`rounded-2xl border p-4 ${ticketRowTone[ticket.status]}`}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <strong className="text-sm text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+              <strong className="text-sm text-slate-900 dark:text-slate-100">
+                {ticket.title}
+                <span className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-400">#{ticket.ticketCode ?? ticket.id}</span>
+              </strong>
               <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusTone[ticket.status]}`}>
                 {statusLabel[ticket.status]}
               </span>
@@ -124,7 +127,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
               <span>Created: {formatRelativeDate(ticket.createdAt)}</span>
               {ticket.status === "CLOSED" && <span>Closed: {formatRelativeDate(ticket.updatedAt)}</span>}
-              {mode === "assigned" && ticket.assignedToId && <span>Ticket #{ticket.id}</span>}
+              {mode === "assigned" && ticket.assignedToId && <span>Ticket #{ticket.ticketCode ?? ticket.id}</span>}
             </div>
           </li>
         ))}

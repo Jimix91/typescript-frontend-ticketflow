@@ -12,6 +12,7 @@ export type TicketPriority = "LOW" | "MEDIUM" | "HIGH";
 
 export type Ticket = {
   id: number;
+  ticketCode?: string | null;
   title: string;
   description: string;
   imageUrl?: string | null;
