@@ -112,7 +112,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
 
   const renderColumn = (title: string, status: TicketStatus, columnTickets: Ticket[]) => (
     <div
-      className="min-h-[620px] rounded-2xl border border-sky-300 bg-white p-4 shadow-md dark:border-slate-700 dark:bg-slate-900"
+      className="min-h-[560px] rounded-2xl border border-sky-300 bg-white p-4 shadow-md dark:border-slate-700 dark:bg-slate-900"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => handleDrop(event, status)}
     >
@@ -129,7 +129,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
         </span>
       </div>
 
-      <div className="ui-scrollbar mt-3 max-h-[520px] overflow-y-auto pr-1">
+      <div className="ui-scrollbar mt-3 max-h-[470px] overflow-y-auto pr-1">
         {isSyncing && tickets.length === 0 && (
           <div className="grid gap-3">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -161,7 +161,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
           return (
         <article
           key={ticket.id}
-          className={`ui-kanban-card ui-fade-in mb-3 flex min-h-[248px] flex-col gap-4 p-[18px] ${
+          className={`ui-kanban-card ui-fade-in mb-3 flex min-h-[220px] flex-col gap-3.5 p-4 ${
             ticket.status === "OPEN"
               ? "bg-blue-100 border-blue-300 dark:bg-slate-800/70 dark:border-blue-900/60"
               : ticket.status === "IN_PROGRESS"
@@ -182,11 +182,11 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
             handleDragStart(event, ticket.id);
           }}
         >
-          <div className="flex items-start justify-between gap-2">
-            <strong className="min-w-0 flex-1 break-words text-base font-semibold leading-6 text-slate-900 dark:text-slate-100">{ticket.title}</strong>
-            <span className="shrink-0">
+          <div className="grid gap-2">
+            <strong className="break-words text-base font-semibold leading-6 text-slate-900 dark:text-slate-100">{ticket.title}</strong>
+            <div className="flex justify-start">
               <StatusBadge status={ticket.status} inProgressSubStatus={ticket.inProgressSubStatus} />
-            </span>
+            </div>
           </div>
 
           <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{ticket.description}</p>
@@ -242,26 +242,26 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
       </div>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">Open</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-blue-600">{openTickets.length}</p>
         </article>
-        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-amber-600">{inProgressTickets.length}</p>
         </article>
-        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">Closed</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-emerald-600">{closedTickets.length}</p>
         </article>
-        <article className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">SLA Watch</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-rose-600">{overdueCount}</p>
           <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{unresolvedCount} unresolved</p>
         </article>
       </section>
 
-      <section className="rounded-2xl border border-sky-300 bg-white p-6 shadow-md dark:border-slate-700 dark:bg-slate-900">
+      <section className="rounded-2xl border border-sky-300 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <input
           value={omnibox}
@@ -335,7 +335,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
         </div>
       </section>
 
-      <p className="ui-alert-info dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200">{dragGuidance}</p>
+      <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">{dragGuidance}</p>
 
       <section className="grid grid-cols-1 gap-6 2xl:grid-cols-3">
         {renderColumn("Open", "OPEN", openTickets)}

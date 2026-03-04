@@ -17,7 +17,7 @@ type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile
 function App() {
   const navButtonClass = "ui-nav-item";
   const summaryChipClass =
-    "inline-flex min-w-[9.5rem] items-center justify-center rounded-full bg-indigo-500/80 px-3 py-1.5 text-center text-xs font-semibold text-indigo-50";
+    "inline-flex min-w-[9.5rem] items-center justify-center rounded-full bg-indigo-500/75 px-3 py-1.5 text-center text-[0.72rem] font-medium text-indigo-50";
   const primaryButtonClass = "ui-btn-primary";
   const secondaryButtonClass = "ui-btn-secondary";
   const navActiveClass = "ui-nav-item ui-nav-item-active";

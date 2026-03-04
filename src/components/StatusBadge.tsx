@@ -29,7 +29,7 @@ export function StatusBadge({ status, inProgressSubStatus = null }: Props) {
       : "";
 
   return (
-    <span className={`ui-badge shrink-0 ${colorClassByStatus[status]}`}>
+    <span className={`ui-badge shrink-0 px-2 py-0.5 text-[0.7rem] ${colorClassByStatus[status]}`}>
       {labelByStatus[status]}{detailLabel}
     </span>
   );
