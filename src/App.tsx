@@ -3,6 +3,7 @@ import { api, setApiToken } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
 import ticketflowLogo from "./media/logo4.png";
 import {
+  ArchivedTicketsPage,
   CreateTicketPage,
   DashboardPage,
   EditTicketPage,
@@ -12,7 +13,19 @@ import {
 } from "./pages";
 import { Ticket, TicketFormValues, TicketStatus, User } from "./types";
 
-type Page = "dashboard" | "create" | "detail" | "edit" | "resolution" | "profile";
+type Page = "dashboard" | "archived" | "create" | "detail" | "edit" | "resolution" | "profile";
+
+const ARCHIVE_DAYS = 5;
+
+const isArchivedClosedTicket = (ticket: Ticket) => {
+  if (ticket.status !== "CLOSED") {
+    return false;
+  }
+
+  const ageInMs = Date.now() - new Date(ticket.createdAt).getTime();
+  const ageInDays = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
+  return ageInDays >= ARCHIVE_DAYS;
+};
 
 function App() {
   const navButtonClass = "ui-nav-item";
@@ -31,6 +44,8 @@ function App() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [archivedTickets, setArchivedTickets] = useState<Ticket[]>([]);
+  const [archivedLoading, setArchivedLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [movingTicketId, setMovingTicketId] = useState<number | null>(null);
@@ -45,8 +60,11 @@ function App() {
   });
 
   const activeTicket = useMemo(
-    () => tickets.find((ticket) => ticket.id === activeTicketId) ?? null,
-    [tickets, activeTicketId],
+    () =>
+      tickets.find((ticket) => ticket.id === activeTicketId) ??
+      archivedTickets.find((ticket) => ticket.id === activeTicketId) ??
+      null,
+    [tickets, archivedTickets, activeTicketId],
   );
 
   const scopedTickets = useMemo(() => {
@@ -83,7 +101,7 @@ function App() {
       } else {
         setIsSyncing(true);
       }
-      const [usersResponse, tasksResponse] = await Promise.all([api.getUsers(), api.getTasks()]);
+      const [usersResponse, tasksResponse] = await Promise.all([api.getUsers(), api.getTasks("active")]);
       setUsers(usersResponse);
       setTickets((prev) => {
         const changed =
@@ -115,6 +133,19 @@ function App() {
       }
     }
   }, [authToken]);
+
+  const loadArchivedTickets = useCallback(async () => {
+    try {
+      setArchivedLoading(true);
+      const archived = await api.getTasks("archived");
+      setArchivedTickets(archived);
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Failed to load archived tickets");
+    } finally {
+      setArchivedLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     setApiToken(authToken);
@@ -155,6 +186,14 @@ function App() {
 
     return () => clearInterval(intervalId);
   }, [loadData]);
+
+  useEffect(() => {
+    if (page !== "archived") {
+      return;
+    }
+
+    void loadArchivedTickets();
+  }, [page, loadArchivedTickets]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
@@ -200,6 +239,7 @@ function App() {
         assignedToId: values.assignedToId,
       });
       setTickets((prev) => prev.map((item) => (item.id === ticketId ? updatedTask : item)));
+      setArchivedTickets((prev) => prev.map((item) => (item.id === ticketId ? updatedTask : item)));
       setActiveTicketId(ticketId);
       setPage("detail");
     } catch (error) {
@@ -220,6 +260,7 @@ function App() {
         inProgressSubStatus: status === "IN_PROGRESS" ? "PENDING_AGENT" : null,
       });
       setTickets((prev) => prev.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
+      setArchivedTickets((prev) => prev.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
       setLiveNotice(`Ticket #${ticketId} moved to ${status}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not update ticket status");
@@ -232,6 +273,7 @@ function App() {
     try {
       await api.deleteTask(ticketId);
       setTickets((prev) => prev.filter((task) => task.id !== ticketId));
+      setArchivedTickets((prev) => prev.filter((task) => task.id !== ticketId));
       setConfirmDeleteId(null);
       setPage("dashboard");
       setActiveTicketId(null);
@@ -243,13 +285,9 @@ function App() {
   const refreshTicket = async (ticketId: number) => {
     const freshTicket = await api.getTaskById(ticketId);
     setTickets((prev) => {
-      const exists = prev.some((ticket) => ticket.id === ticketId);
-      if (!exists) {
-        return [freshTicket, ...prev];
-      }
-
       return prev.map((ticket) => (ticket.id === ticketId ? freshTicket : ticket));
     });
+    setArchivedTickets((prev) => prev.map((ticket) => (ticket.id === ticketId ? freshTicket : ticket)));
     return freshTicket;
   };
 
@@ -262,9 +300,12 @@ function App() {
 
     setActiveTicketId(ticketId);
 
+    const archivedClosedTicket = targetTicket ? isArchivedClosedTicket(targetTicket) : false;
+
     const shouldOpenResolution =
-      authUser?.role === "ADMIN" ||
-      (authUser?.role === "AGENT" && targetTicket?.assignedToId === authUser.id);
+      !archivedClosedTicket &&
+      (authUser?.role === "ADMIN" ||
+        (authUser?.role === "AGENT" && targetTicket?.assignedToId === authUser.id));
 
     setPage(shouldOpenResolution ? "resolution" : "detail");
   };
@@ -325,10 +366,11 @@ function App() {
     setAuthUser(null);
     setUsers([]);
     setTickets([]);
+    setArchivedTickets([]);
     setPage("dashboard");
   };
 
-  const isDashboardActive = page === "dashboard" || page === "detail" || page === "edit" || page === "resolution";
+  const isDashboardActive = page === "dashboard" || page === "archived" || page === "detail" || page === "edit" || page === "resolution";
 
   if (loading) {
     return (
@@ -506,6 +548,18 @@ function App() {
           onEdit={(ticketId) => void openTicketEdit(ticketId)}
           onDelete={(ticketId) => setConfirmDeleteId(ticketId)}
           onMoveStatus={handleMoveStatus}
+          onViewArchived={() => setPage("archived")}
+        />
+      )}
+
+      {page === "archived" && (
+        <ArchivedTicketsPage
+          tickets={archivedTickets}
+          users={users}
+          loading={archivedLoading}
+          onBack={() => setPage("dashboard")}
+          onRefresh={() => void loadArchivedTickets()}
+          onView={(ticketId) => void openTicketDetail(ticketId)}
         />
       )}
 
@@ -555,6 +609,7 @@ function App() {
           onBack={() => setPage("dashboard")}
           onTicketUpdate={(updated) => {
             setTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
+            setArchivedTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
           }}
         />
       )}

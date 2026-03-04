@@ -13,9 +13,10 @@ type Props = {
   onEdit: (ticketId: number) => void;
   onDelete: (ticketId: number) => void;
   onMoveStatus: (ticketId: number, status: TicketStatus) => void;
+  onViewArchived: () => void;
 };
 
-export function DashboardPage({ authUser, tickets, users, isSyncing = false, movingTicketId = null, onView, onEdit, onDelete, onMoveStatus }: Props) {
+export function DashboardPage({ authUser, tickets, users, isSyncing = false, movingTicketId = null, onView, onEdit, onDelete, onMoveStatus, onViewArchived }: Props) {
   const [omnibox, setOmnibox] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | TicketStatus>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<"ALL" | TicketPriority>("ALL");
@@ -167,11 +168,22 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
       onDrop={(event) => handleDrop(event, status)}
     >
       <div className="mb-2 flex items-center justify-between border-b border-sky-200 pb-2 dark:border-slate-700">
-        <h3 className={`text-sm font-semibold ${
-          status === "OPEN" ? "text-blue-700" : status === "IN_PROGRESS" ? "text-amber-700" : "text-emerald-700"
-        }`}>
-          {title}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className={`text-sm font-semibold ${
+            status === "OPEN" ? "text-blue-700" : status === "IN_PROGRESS" ? "text-amber-700" : "text-emerald-700"
+          }`}>
+            {title}
+          </h3>
+          {status === "CLOSED" && (
+            <button
+              type="button"
+              className="ui-btn-secondary ui-focusable px-2.5 py-1 text-[0.68rem]"
+              onClick={onViewArchived}
+            >
+              Archived
+            </button>
+          )}
+        </div>
         <span className={`rounded-full px-2 py-1 text-xs font-medium text-white ${
           status === "OPEN" ? "bg-blue-600" : status === "IN_PROGRESS" ? "bg-amber-500" : "bg-emerald-600"
         }`}>

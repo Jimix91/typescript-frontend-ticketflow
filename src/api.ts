@@ -53,7 +53,7 @@ export const api = {
     request<User>("/users/me", { method: "PATCH", body: JSON.stringify(data) }),
   createUser: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
-  getTasks: () => request<Ticket[]>("/tickets"),
+  getTasks: (scope: "active" | "archived" | "all" = "active") => request<Ticket[]>(`/tickets?scope=${scope}`),
   getTaskById: (taskId: number) => request<Ticket>(`/tickets/${taskId}`),
   createTask: (data: CreateTaskInput) =>
     request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
