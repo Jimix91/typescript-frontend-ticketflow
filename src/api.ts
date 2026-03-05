@@ -18,7 +18,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...(init?.headers as Record<string, string> | undefined),
   };
 
-  const tokenFromStorage = localStorage.getItem("ticketflow-token");
+  const tokenFromStorage = sessionStorage.getItem("ticketflow-token");
   const token = authToken ?? tokenFromStorage;
 
   if (token) {

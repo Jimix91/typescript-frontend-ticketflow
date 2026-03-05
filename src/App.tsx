@@ -36,7 +36,7 @@ function App() {
   const navActiveClass = "ui-nav-item ui-nav-item-active";
 
   const [authUser, setAuthUser] = useState<User | null>(null);
-  const [authToken, setAuthTokenState] = useState<string | null>(() => localStorage.getItem("ticketflow-token"));
+  const [authToken, setAuthTokenState] = useState<string | null>(() => sessionStorage.getItem("ticketflow-token"));
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
@@ -165,7 +165,7 @@ function App() {
         await loadData(true);
       } catch (_error) {
         setAuthTokenState(null);
-        localStorage.removeItem("ticketflow-token");
+        sessionStorage.removeItem("ticketflow-token");
         setApiToken(null);
         setAuthUser(null);
         setLoading(false);
@@ -322,7 +322,7 @@ function App() {
 
   const persistToken = (token: string) => {
     setAuthTokenState(token);
-    localStorage.setItem("ticketflow-token", token);
+    sessionStorage.setItem("ticketflow-token", token);
     setApiToken(token);
   };
 
@@ -362,7 +362,7 @@ function App() {
   const handleLogout = () => {
     setAuthTokenState(null);
     setApiToken(null);
-    localStorage.removeItem("ticketflow-token");
+    sessionStorage.removeItem("ticketflow-token");
     setAuthUser(null);
     setUsers([]);
     setTickets([]);
