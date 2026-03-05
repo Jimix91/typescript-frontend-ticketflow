@@ -22,7 +22,7 @@ const isArchivedClosedTicket = (ticket: Ticket) => {
     return false;
   }
 
-  const ageInMs = Date.now() - new Date(ticket.createdAt).getTime();
+  const ageInMs = Date.now() - new Date(ticket.updatedAt).getTime();
   const ageInDays = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
   return ageInDays >= ARCHIVE_DAYS;
 };
