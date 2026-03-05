@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, setApiToken } from "./api";
 import { ConfirmModal } from "./components/ConfirmModal";
 import ticketflowLogo from "./media/logo4.png";
@@ -37,10 +37,12 @@ function App() {
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authToken, setAuthTokenState] = useState<string | null>(() => sessionStorage.getItem("ticketflow-token"));
+  const skipProfileBootstrapRef = useRef(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
 
   const [users, setUsers] = useState<User[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -161,9 +163,14 @@ function App() {
 
     const bootstrap = async () => {
       try {
-        const me = await api.me();
+        if (skipProfileBootstrapRef.current) {
+          skipProfileBootstrapRef.current = false;
+          await loadData(true);
+          return;
+        }
+
+        const [me] = await Promise.all([api.me(), loadData(true)]);
         setAuthUser(me);
-        await loadData(true);
       } catch (_error) {
         setAuthTokenState(null);
         sessionStorage.removeItem("ticketflow-token");
@@ -175,6 +182,15 @@ function App() {
 
     void bootstrap();
   }, [authToken, loadData]);
+
+  useEffect(() => {
+    if (authToken) {
+      return;
+    }
+
+    void api.health().catch(() => {
+    });
+  }, [authToken]);
 
   useEffect(() => {
     if (!authToken) {
@@ -329,22 +345,27 @@ function App() {
 
   const handleLogin = async () => {
     try {
+      setIsAuthSubmitting(true);
       const response = await api.login({
         email: authEmail.trim(),
         password: authPassword,
       });
 
+      skipProfileBootstrapRef.current = true;
       persistToken(response.token);
       setAuthUser(response.user);
       setAuthPassword("");
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Login failed");
+    } finally {
+      setIsAuthSubmitting(false);
     }
   };
 
   const handleRegister = async () => {
     try {
+      setIsAuthSubmitting(true);
       const response = await api.register({
         name: authName.trim(),
         email: authEmail.trim(),
@@ -352,11 +373,14 @@ function App() {
         role: "EMPLOYEE",
       });
 
+      skipProfileBootstrapRef.current = true;
       persistToken(response.token);
       setAuthUser(response.user);
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Register failed");
+    } finally {
+      setIsAuthSubmitting(false);
     }
   };
 
@@ -437,16 +461,17 @@ function App() {
 
               <div className="mt-2 flex flex-wrap gap-3">
                 {authMode === "login" ? (
-                  <button className={primaryButtonClass} onClick={() => void handleLogin()}>
-                    Log in
+                  <button className={primaryButtonClass} onClick={() => void handleLogin()} disabled={isAuthSubmitting}>
+                    {isAuthSubmitting ? "Logging in..." : "Log in"}
                   </button>
                 ) : (
-                  <button className={primaryButtonClass} onClick={() => void handleRegister()}>
-                    Register
+                  <button className={primaryButtonClass} onClick={() => void handleRegister()} disabled={isAuthSubmitting}>
+                    {isAuthSubmitting ? "Registering..." : "Register"}
                   </button>
                 )}
                 <button
                   className={secondaryButtonClass + " bg-transparent"}
+                  disabled={isAuthSubmitting}
                   onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
                 >
                   {authMode === "login" ? "Need an account?" : "Already have an account?"}
