@@ -122,6 +122,7 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
 
   const openPriorityBreakdown = getPriorityBreakdown(openTickets);
   const inProgressPriorityBreakdown = getPriorityBreakdown(inProgressTickets);
+  const closedPriorityBreakdown = getPriorityBreakdown(closedTickets);
 
   const dragGuidance =
     authUser.role === "ADMIN"
@@ -324,6 +325,9 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
         <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">Closed</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-emerald-600">{closedTickets.length}</p>
+          <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+            High {closedPriorityBreakdown.high} · Medium {closedPriorityBreakdown.medium} · Low {closedPriorityBreakdown.low}
+          </p>
         </article>
         <article className="rounded-2xl border border-sky-300 bg-white p-5 text-center shadow-md transition-all duration-200 ease-in-out hover:-translate-y-px hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">SLA Watch</p>
