@@ -138,7 +138,8 @@ function App() {
     try {
       setArchivedLoading(true);
       const archived = await api.getTasks("archived");
-      setArchivedTickets(archived);
+      const normalizedArchived = archived.filter((ticket) => isArchivedClosedTicket(ticket));
+      setArchivedTickets(normalizedArchived);
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Failed to load archived tickets");
