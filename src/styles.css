@@ -55,7 +55,7 @@
   }
 
   .ui-sidebar-content {
-    @apply relative z-10 flex flex-col gap-5;
+    @apply relative z-10 flex flex-col gap-5 lg:h-full lg:overflow-y-auto lg:pr-1;
   }
 
   .ui-logo-wrap {
@@ -67,7 +67,7 @@
   }
 
   .ui-nav-list {
-    @apply grid gap-2;
+    @apply grid grid-cols-1 gap-2 xs:grid-cols-2 lg:grid-cols-1;
   }
 
   .ui-nav-item {

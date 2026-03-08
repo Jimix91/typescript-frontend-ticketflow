@@ -57,6 +57,7 @@ function App() {
   const [activeTicketId, setActiveTicketId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [liveNotice, setLiveNotice] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return localStorage.getItem("ticketflow-theme") === "dark";
   });
@@ -216,6 +217,31 @@ function App() {
     document.documentElement.classList.toggle("dark", isDarkMode);
     localStorage.setItem("ticketflow-theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [page]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (!liveNotice) {
@@ -485,9 +511,51 @@ function App() {
   }
 
   return (
-    <main className="ui-shell ui-fade-in lg:grid lg:grid-cols-[20rem,1fr] lg:gap-6">
-      <header className="ui-sidebar sticky top-3 z-40 mb-5 lg:top-6 lg:z-40 lg:flex lg:h-[calc(100vh-3rem)] lg:w-full lg:self-start lg:flex-col lg:overflow-y-auto lg:p-5">
+    <main className="ui-shell ui-fade-in lg:grid lg:grid-cols-[20rem,1fr] lg:items-start lg:gap-6">
+      <div className="ui-topbar mb-4 flex items-center justify-between lg:hidden">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">TicketFlow</p>
+          <p className="truncate text-base font-bold text-slate-900 dark:text-slate-100">{authUser.name}</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          className="ui-btn-secondary min-w-[7.5rem]"
+          aria-label="Toggle navigation menu"
+          aria-expanded={isMobileMenuOpen}
+        >
+          {isMobileMenuOpen ? "Close ✕" : "Menu ☰"}
+        </button>
+      </div>
+
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] lg:hidden"
+          aria-label="Close navigation menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <header
+        className={`ui-sidebar fixed inset-y-0 left-0 z-50 m-0 w-[min(88vw,22rem)] max-w-full transform rounded-r-3xl border-r border-slate-500/70 shadow-2xl transition-transform duration-300 ease-out lg:mb-5 lg:mr-0 lg:max-h-[calc(100vh-3rem)] lg:w-full lg:translate-x-0 lg:self-start lg:rounded-3xl lg:border lg:shadow-sm ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-[105%]"
+        } lg:sticky lg:top-6 lg:flex lg:flex-col lg:overflow-hidden`}
+      >
         <div className="ui-sidebar-content">
+          <div className="flex items-center justify-between lg:hidden">
+            <p className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Navigation</p>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="rounded-lg px-2 py-1 text-sm font-semibold text-slate-200 hover:bg-slate-500/60"
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
+
           <div className="flex flex-col gap-4">
             <div className="ui-logo-wrap">
               <img src={ticketflowLogo} alt="TicketFlow logo" className="ui-logo" />
@@ -495,7 +563,7 @@ function App() {
 
             <div className="ui-nav-list">
               <button onClick={() => setPage("dashboard")} className={isDashboardActive ? navActiveClass : navButtonClass}><span>◫</span> Dashboard</button>
-              <button onClick={() => setPage("create")} disabled={users.length === 0} className="flex w-full items-center gap-3 rounded-xl bg-indigo-600 px-4 py-2 text-left text-white transition-all duration-200 ease-in-out hover:bg-indigo-700 disabled:opacity-50">
+              <button onClick={() => setPage("create")} disabled={users.length === 0} className="ui-nav-item w-full justify-start bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
                 <span>＋</span> Create Ticket
               </button>
               <button onClick={() => setIsDarkMode((prev) => !prev)} className={navButtonClass}>
@@ -535,7 +603,7 @@ function App() {
               <span>☺</span> My Profile
             </button>
 
-            <div className="flex w-full flex-col items-center gap-2">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 lg:flex-col">
               <span className={summaryChipClass}>My Open: {ticketSummary.open}</span>
               <span className={summaryChipClass}>My In Progress: {ticketSummary.inProgress}</span>
               <span className={summaryChipClass}>My Closed: {ticketSummary.closed}</span>
