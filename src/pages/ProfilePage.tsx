@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useId, useMemo, useState } from "react";
 import { api } from "../api";
 import { formatRelativeDate } from "../time";
 import { Ticket, TicketStatus, User } from "../types";
@@ -43,8 +43,10 @@ const ticketRowTone: Record<TicketStatus, string> = {
 };
 
 export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Props) {
+  const profileImageInputId = useId();
   const [displayName, setDisplayName] = useState(authUser.name);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(authUser.profileImageUrl ?? null);
+  const [profileImageName, setProfileImageName] = useState(authUser.profileImageUrl ? "Current image" : "No file selected");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -52,6 +54,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
   useEffect(() => {
     setDisplayName(authUser.name);
     setProfileImageUrl(authUser.profileImageUrl ?? null);
+    setProfileImageName(authUser.profileImageUrl ? "Current image" : "No file selected");
   }, [authUser.name, authUser.profileImageUrl]);
 
   const createdByMe = useMemo(() => tickets.filter((ticket) => ticket.createdById === authUser.id), [tickets, authUser.id]);
@@ -72,6 +75,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
   const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
+      setProfileImageName("No file selected");
       return;
     }
 
@@ -83,6 +87,7 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
     });
 
     setProfileImageUrl(encodedImage);
+    setProfileImageName(file.name);
   };
 
   const handleSaveProfile = async () => {
@@ -189,13 +194,29 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
           </label>
           <label className="grid gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
             Profile image
-            <input type="file" accept="image/*" onChange={(event) => void handleImageChange(event)} />
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
+              <input id={profileImageInputId} type="file" accept="image/*" className="hidden" onChange={(event) => void handleImageChange(event)} />
+              <label
+                htmlFor={profileImageInputId}
+                className="inline-flex cursor-pointer items-center rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+              >
+                Upload image
+              </label>
+              <span className="text-xs text-slate-600 dark:text-slate-300">{profileImageName}</span>
+            </div>
           </label>
           <div className="flex flex-wrap gap-3 pt-1">
             <button onClick={() => void handleSaveProfile()} disabled={busy} className="ui-btn-primary min-w-[10rem]">
               {busy ? "Saving..." : "Save Profile"}
             </button>
-            <button onClick={() => setProfileImageUrl(null)} disabled={busy} className="ui-btn-secondary min-w-[10rem]">
+            <button
+              onClick={() => {
+                setProfileImageUrl(null);
+                setProfileImageName("No file selected");
+              }}
+              disabled={busy}
+              className="ui-btn-secondary min-w-[10rem]"
+            >
               Remove Image
             </button>
           </div>
