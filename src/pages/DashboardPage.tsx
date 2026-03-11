@@ -20,8 +20,10 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
   const [omnibox, setOmnibox] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | TicketStatus>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<"ALL" | TicketPriority>("ALL");
-  const [assignedToFilter, setAssignedToFilter] = useState<"ALL" | "UNASSIGNED" | number>("ALL");
-  const [createdByFilter, setCreatedByFilter] = useState<"ALL" | number>("ALL");
+  const initialAssignedToFilter: "ALL" | "UNASSIGNED" | number = authUser.role === "AGENT" ? authUser.id : "ALL";
+  const [assignedToFilter, setAssignedToFilter] = useState<"ALL" | "UNASSIGNED" | number>(initialAssignedToFilter);
+  const initialCreatedByFilter: "ALL" | number = authUser.role === "EMPLOYEE" ? authUser.id : "ALL";
+  const [createdByFilter, setCreatedByFilter] = useState<"ALL" | number>(initialCreatedByFilter);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
@@ -29,8 +31,8 @@ export function DashboardPage({ authUser, tickets, users, isSyncing = false, mov
     setOmnibox("");
     setStatusFilter("ALL");
     setPriorityFilter("ALL");
-    setAssignedToFilter("ALL");
-    setCreatedByFilter("ALL");
+    setAssignedToFilter(initialAssignedToFilter);
+    setCreatedByFilter(initialCreatedByFilter);
     setFromDate("");
     setToDate("");
   };
