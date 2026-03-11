@@ -631,6 +631,7 @@ function App() {
           authUser={authUser}
           tickets={tickets}
           onBack={() => setPage("dashboard")}
+          onViewTicket={(ticketId) => void openTicketDetail(ticketId)}
           onProfileUpdated={(updatedUser) => {
             setAuthUser(updatedUser);
             setUsers((prev) => prev.map((item) => (item.id === updatedUser.id ? { ...item, ...updatedUser } : item)));

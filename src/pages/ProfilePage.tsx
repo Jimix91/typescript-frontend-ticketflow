@@ -8,6 +8,7 @@ type Props = {
   tickets: Ticket[];
   onBack: () => void;
   onProfileUpdated: (user: User) => void;
+  onViewTicket: (ticketId: number) => void | Promise<void>;
 };
 
 const summarizeByStatus = (items: Ticket[]) => {
@@ -42,7 +43,7 @@ const ticketRowTone: Record<TicketStatus, string> = {
   CLOSED: "border-emerald-200/90 bg-emerald-50/90 dark:border-emerald-900/60 dark:bg-emerald-950/25",
 };
 
-export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Props) {
+export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated, onViewTicket }: Props) {
   const profileImageInputId = useId();
   const [displayName, setDisplayName] = useState(authUser.name);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(authUser.profileImageUrl ?? null);
@@ -133,6 +134,15 @@ export function ProfilePage({ authUser, tickets, onBack, onProfileUpdated }: Pro
               <span>Created: {formatRelativeDate(ticket.createdAt)}</span>
               {ticket.status === "CLOSED" && <span>Closed: {formatRelativeDate(ticket.updatedAt)}</span>}
               {mode === "assigned" && ticket.assignedToId && <span>Ticket #{ticket.ticketCode ?? ticket.id}</span>}
+            </div>
+            <div className="mt-3">
+              <button
+                type="button"
+                className="ui-btn-secondary px-3 py-1.5 text-xs"
+                onClick={() => void onViewTicket(ticket.id)}
+              >
+                Open ticket
+              </button>
             </div>
           </li>
         ))}
