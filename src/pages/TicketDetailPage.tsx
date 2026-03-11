@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useId, useState } from "react";
 import { api } from "../api";
 import { TicketCard } from "../components/TicketCard";
 import { StatusBadge } from "../components/StatusBadge";
@@ -15,10 +15,12 @@ type Props = {
 };
 
 export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDelete }: Props) {
+  const commentImageInputId = useId();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
+  const [commentImageName, setCommentImageName] = useState("No file selected");
   const [savingComment, setSavingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
@@ -52,6 +54,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
     const file = event.target.files?.[0];
     if (!file) {
       setCommentImageUrl(null);
+      setCommentImageName("No file selected");
       return;
     }
 
@@ -63,6 +66,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
     });
 
     setCommentImageUrl(encodedImage);
+    setCommentImageName(file.name);
   };
 
   const handleAddComment = async (event: FormEvent) => {
@@ -82,6 +86,7 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
       setComments((prev) => [...prev, created]);
       setCommentText("");
       setCommentImageUrl(null);
+      setCommentImageName("No file selected");
       setError(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not add comment");
@@ -179,7 +184,16 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
               placeholder="Write your update"
               rows={3}
             />
-            <input type="file" accept="image/*" onChange={(event) => void handleCommentImageChange(event)} />
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
+              <input id={commentImageInputId} type="file" accept="image/*" className="hidden" onChange={(event) => void handleCommentImageChange(event)} />
+              <label
+                htmlFor={commentImageInputId}
+                className="inline-flex cursor-pointer items-center rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+              >
+                Attach image
+              </label>
+              <span className="text-xs text-slate-600 dark:text-slate-300">{commentImageName}</span>
+            </div>
             {commentImageUrl && (
               <img
                 src={commentImageUrl}
@@ -192,7 +206,15 @@ export function TicketDetailPage({ ticket, authUser, users, onBack, onEdit, onDe
                 Add Comment
               </button>
               {commentImageUrl && (
-                <button type="button" onClick={() => setCommentImageUrl(null)} disabled={savingComment} className="ui-btn-secondary">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentImageUrl(null);
+                    setCommentImageName("No file selected");
+                  }}
+                  disabled={savingComment}
+                  className="ui-btn-secondary"
+                >
                   Remove Image
                 </button>
               )}

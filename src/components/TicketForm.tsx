@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useId, useState } from "react";
 import { InProgressSubStatus, Ticket, TicketFormValues, TicketPriority, TicketStatus, User } from "../types";
 
 type Props = {
@@ -11,10 +11,12 @@ type Props = {
 
 export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmit, onCancel }: Props) {
   const agentUsers = users.filter((user) => user.role === "AGENT");
+  const imageInputId = useId();
 
   const [title, setTitle] = useState(initialTicket?.title ?? "");
   const [description, setDescription] = useState(initialTicket?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(initialTicket?.imageUrl ?? null);
+  const [imageFileName, setImageFileName] = useState(initialTicket?.imageUrl ? "Current image" : "No file selected");
   const [status, setStatus] = useState<TicketStatus>(initialTicket?.status ?? "OPEN");
   const [inProgressSubStatus, setInProgressSubStatus] = useState<InProgressSubStatus | null>(
     initialTicket?.inProgressSubStatus ?? null,
@@ -26,6 +28,7 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
     const file = event.target.files?.[0];
     if (!file) {
       setImageUrl(null);
+      setImageFileName("No file selected");
       return;
     }
 
@@ -37,6 +40,7 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
     });
 
     setImageUrl(encodedImage);
+    setImageFileName(file.name);
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -86,7 +90,16 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
 
         <div className="grid gap-1.5">
           <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Attachment image</label>
-          <input type="file" accept="image/*" onChange={(event) => void handleImageChange(event)} />
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
+            <input id={imageInputId} type="file" accept="image/*" className="hidden" onChange={(event) => void handleImageChange(event)} />
+            <label
+              htmlFor={imageInputId}
+              className="inline-flex cursor-pointer items-center rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+            >
+              Choose image
+            </label>
+            <span className="text-xs text-slate-600 dark:text-slate-300">{imageFileName}</span>
+          </div>
         </div>
 
         {imageUrl && (
@@ -94,7 +107,10 @@ export function TicketForm({ users, initialTicket, canEditStatus = true, onSubmi
             <img src={imageUrl} alt="Ticket attachment preview" className="w-full max-w-xs rounded-xl border border-slate-200 object-cover dark:border-slate-700" />
             <button
               type="button"
-              onClick={() => setImageUrl(null)}
+              onClick={() => {
+                setImageUrl(null);
+                setImageFileName("No file selected");
+              }}
               className="ui-btn-secondary w-fit px-3 py-2"
             >
               Remove Image

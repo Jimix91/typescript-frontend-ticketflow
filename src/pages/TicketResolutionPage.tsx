@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useId, useState } from "react";
 import { api } from "../api";
 import { formatDateTime, formatRelativeDate } from "../time";
 import { Comment, InProgressSubStatus, Ticket, TicketStatus, User } from "../types";
@@ -12,10 +12,12 @@ type Props = {
 };
 
 export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate }: Props) {
+  const commentImageInputId = useId();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentImageUrl, setCommentImageUrl] = useState<string | null>(null);
+  const [commentImageName, setCommentImageName] = useState("No file selected");
   const [status, setStatus] = useState<TicketStatus>(ticket.status);
   const [inProgressSubStatus, setInProgressSubStatus] = useState<InProgressSubStatus | null>(ticket.inProgressSubStatus);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -48,6 +50,7 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
     const file = event.target.files?.[0];
     if (!file) {
       setCommentImageUrl(null);
+      setCommentImageName("No file selected");
       return;
     }
 
@@ -59,6 +62,7 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
     });
 
     setCommentImageUrl(encodedImage);
+    setCommentImageName(file.name);
   };
 
   const handleAddComment = async (event: FormEvent) => {
@@ -80,6 +84,7 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
       setInProgressSubStatus(refreshed.inProgressSubStatus);
       setCommentText("");
       setCommentImageUrl(null);
+      setCommentImageName("No file selected");
       setError(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not add comment");
@@ -247,7 +252,16 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
             placeholder="Write your resolution steps or update"
             rows={3}
           />
-          <input type="file" accept="image/*" onChange={(event) => void handleCommentImageChange(event)} />
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
+            <input id={commentImageInputId} type="file" accept="image/*" className="hidden" onChange={(event) => void handleCommentImageChange(event)} />
+            <label
+              htmlFor={commentImageInputId}
+              className="inline-flex cursor-pointer items-center rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+            >
+              Attach image
+            </label>
+            <span className="text-xs text-slate-600 dark:text-slate-300">{commentImageName}</span>
+          </div>
           {commentImageUrl && (
             <img
               src={commentImageUrl}
@@ -260,7 +274,15 @@ export function TicketResolutionPage({ ticket, authUser, onBack, onTicketUpdate 
               Add Comment
             </button>
             {commentImageUrl && (
-              <button type="button" onClick={() => setCommentImageUrl(null)} disabled={busy} className="ui-btn-secondary">
+              <button
+                type="button"
+                onClick={() => {
+                  setCommentImageUrl(null);
+                  setCommentImageName("No file selected");
+                }}
+                disabled={busy}
+                className="ui-btn-secondary"
+              >
                 Remove Image
               </button>
             )}
