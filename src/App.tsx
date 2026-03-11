@@ -38,8 +38,6 @@ function App() {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authToken, setAuthTokenState] = useState<string | null>(() => sessionStorage.getItem("ticketflow-token"));
   const skipProfileBootstrapRef = useRef(false);
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
@@ -389,27 +387,6 @@ function App() {
     }
   };
 
-  const handleRegister = async () => {
-    try {
-      setIsAuthSubmitting(true);
-      const response = await api.register({
-        name: authName.trim(),
-        email: authEmail.trim(),
-        password: authPassword,
-        role: "EMPLOYEE",
-      });
-
-      skipProfileBootstrapRef.current = true;
-      persistToken(response.token);
-      setAuthUser(response.user);
-      setErrorMessage(null);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Register failed");
-    } finally {
-      setIsAuthSubmitting(false);
-    }
-  };
-
   const handleLogout = () => {
     setAuthTokenState(null);
     setApiToken(null);
@@ -458,19 +435,12 @@ function App() {
           )}
 
           <section className="ui-card">
-            <h2 className="ui-title mb-4">
-              {authMode === "login" ? "Welcome back" : "Create your account"}
-            </h2>
+            <h2 className="ui-title mb-2">Welcome back</h2>
+            <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+              Sign in with credentials created by your administrator.
+            </p>
 
             <div className="grid gap-3">
-              {authMode === "register" && (
-                <input
-                  placeholder="Your name"
-                  value={authName}
-                  onChange={(event) => setAuthName(event.target.value)}
-                />
-              )}
-
               <input
                 type="email"
                 placeholder="Email"
@@ -486,22 +456,12 @@ function App() {
               />
 
               <div className="mt-2 flex flex-wrap gap-3">
-                {authMode === "login" ? (
-                  <button className={primaryButtonClass} onClick={() => void handleLogin()} disabled={isAuthSubmitting}>
-                    {isAuthSubmitting ? "Logging in..." : "Log in"}
-                  </button>
-                ) : (
-                  <button className={primaryButtonClass} onClick={() => void handleRegister()} disabled={isAuthSubmitting}>
-                    {isAuthSubmitting ? "Registering..." : "Register"}
-                  </button>
-                )}
-                <button
-                  className={secondaryButtonClass + " bg-transparent"}
-                  disabled={isAuthSubmitting}
-                  onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
-                >
-                  {authMode === "login" ? "Need an account?" : "Already have an account?"}
+                <button className={primaryButtonClass} onClick={() => void handleLogin()} disabled={isAuthSubmitting}>
+                  {isAuthSubmitting ? "Logging in..." : "Log in"}
                 </button>
+                <span className={secondaryButtonClass + " cursor-default bg-transparent opacity-70"}>
+                  Need access? Contact an admin.
+                </span>
             </div>
             </div>
           </section>

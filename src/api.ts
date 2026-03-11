@@ -46,8 +46,6 @@ export const api = {
   health: () => request<{ ok: boolean }>("/health", { cache: "no-store" }),
   login: (data: { email: string; password: string }) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
-  register: (data: { name: string; email: string; password: string; role?: User["role"] }) =>
-    request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
   me: () => request<User>("/auth/me"),
   getUsers: () => request<User[]>("/users"),
   updateMyProfile: (data: { name?: string; profileImageUrl?: string | null }) =>
