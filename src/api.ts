@@ -1,6 +1,7 @@
 import { Comment, CreateCommentInput, CreateTaskInput, Ticket, UpdateCommentInput, UpdateTaskInput, User } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5005/api";
+const API_BASE_URL = API_URL.replace(/\/+$/, "");
 let authToken: string | null = null;
 
 type AuthResponse = {
@@ -25,7 +26,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const normalizedPath = path.replace(/^\/+/, "");
+  const response = await fetch(`${API_BASE_URL}/${normalizedPath}`, {
     headers,
     ...init,
   });
